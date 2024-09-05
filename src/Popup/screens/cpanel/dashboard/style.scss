@@ -26,7 +26,22 @@
 
             span {
                 font-size: 18px;
+                font-weight: 700;
+            }
+
+            .color-green {
+                color: green !important;
             }
         }
+    }
+
+    .Dashboard__info {
+        margin-top: 40px;
+        padding: 16px;
+        border: 1px solid #f1ed52;
+        border-radius: 20px;
+        font-weight: bold;
+        background: #f9f8aa;
+        font-size: 16px;
     }
 }

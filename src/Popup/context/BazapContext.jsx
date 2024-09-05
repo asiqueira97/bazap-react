@@ -62,18 +62,25 @@ export default function BazapContextProvider({children}) {
       if( response.message === 'jsonDataExists' ) {
         const jsonData = JSON.parse(response.jsonData)
 
-        // mountProductListByPerson(jsonData)
-        // mountProductList(jsonData)
+        mountProductListByPerson(jsonData)
+        mountProductList(jsonData)
+
+        setTimeout(() => {
+          setLoadingSearch(false)
+          setInitialPage(false)
+        }, 500 )
       }
 
       if(response.message === 'list') {
-        setLoadingSearch(false)
-        setInitialPage(false)
-
         if(response.domInfo.messages.length > 0) {
             mountProductListByPerson(response.domInfo)
             mountProductList(response.domInfo)
         }
+
+        setTimeout(() => {
+          setLoadingSearch(false)
+          setInitialPage(false)
+        }, 500 )
       }
 
       if(response.message === 'notFound' || response.message === 'notLogged') {
