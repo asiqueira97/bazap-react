@@ -1,0 +1,21 @@
+.cardPaymentInformation {
+    border-top: 1px solid #ddd;
+    padding: 10px;
+    justify-content: space-evenly;
+
+    div {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 16px;
+
+        .pix {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .congratulations {
+            font-size: 16px;
+        }
+    }
+}

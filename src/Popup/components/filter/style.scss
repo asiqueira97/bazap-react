@@ -1,0 +1,31 @@
+.options_container {
+
+    h4 {
+        color: #a19f9f;
+    }
+    
+    .options {
+        padding-top: 10px;
+        display: flex;
+        gap: 10px;
+
+        button {
+            min-width: 140px;
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #f06925;
+            background-color: #fff;
+            cursor: pointer;
+
+            &:hover {
+                background-color: #ef773b;
+                color: #fff;
+            }
+        }
+
+        button.active {
+            background-color: #f06925;
+            color: #fff;
+        }
+    }
+}

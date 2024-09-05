@@ -1,0 +1,35 @@
+.ProductCardClient {
+    border: 1px solid #B3B3B3;
+    border-radius: 10px;
+    border-right: 4px solid #f06925;
+    margin-bottom: 15px;
+    background-color: #fff;
+
+    .infoClient {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 5px 15px;
+
+        .info {
+            display: flex;
+            align-items: center;
+        }
+
+        .total {
+            border-radius: 20px;
+            background-color: #36b85d;
+            padding: 10px 20px;
+            color: #fff;
+        }
+    }
+
+    .product-list {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        align-content: start;
+        gap: 8px;
+        margin-top: 15px;
+    }
+}

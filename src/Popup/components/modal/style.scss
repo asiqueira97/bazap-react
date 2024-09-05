@@ -1,0 +1,36 @@
+.modal {
+    width: 500px;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+
+    .btnCloseModal {
+        position: absolute;
+        right: -18px;
+        background: transparent;
+        top: -17px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .title {
+        font-size: 18px;
+    }
+
+    .info-download {
+        border-radius: 20px;
+        background-color: #f7dacb;
+    
+        ul {
+            padding: 10px 0px;
+
+            li {
+                list-style-type: none;
+                padding: 6px 20px;
+                font-size: 14px;
+            }
+        }
+    }
+}
