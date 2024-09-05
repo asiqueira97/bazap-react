@@ -10,15 +10,18 @@ const Panel = () => {
     const { currentPage } = useBazapContext()
 
     const pages = {
-        'dashboard': <Dashboard />,
-        'clients': <Clients />,
-        'products': <Products />
-    }
-
-    const titles = {
-        'dashboard': 'Dashboard',
-        'clients': 'Clientes',
-        'products': 'Produtos'
+        'dashboard' : {
+            'title': 'Dashboard',
+            'component': <Dashboard />
+        },
+        'clients': {
+            'title': 'Clientes',
+            'component': <Clients />
+        },
+        'products': {
+            'title': 'Produtos',
+            'component': <Products />
+        }
     }
 
     return (
@@ -29,11 +32,11 @@ const Panel = () => {
 
                 <div className="Dashboard__content">
                     <header>
-                        <h3>{titles[currentPage]}</h3>
+                        <h3>{pages[currentPage]['title']}</h3>
                     </header>
 
                     <div className="Dashboard_page-content">
-                        { pages[currentPage] }
+                        {pages[currentPage]['component']}
                     </div>
                 </div>
             </div>
