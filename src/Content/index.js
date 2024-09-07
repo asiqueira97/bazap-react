@@ -61,6 +61,7 @@ function getPublishedProducts(port) {
                 if(divImages) {
                     const images = divImages.querySelectorAll('img')
                     const urlImages = Array.from(images).map( img => img.src )
+
                     products.push({
                         id,
                         name: text,
@@ -181,10 +182,13 @@ function init(port, params) {
 
                 const toUp = setInterval(function(){
                     const find = scrollToUp(params.period)
-                    if(find){
+                    if(find) {
                         clearInterval(toUp)
-                        getMessages(port,params,groupName)
-                        getPublishedProducts(port)
+                        
+                        setTimeout(()=> {
+                            getMessages(port,params,groupName)
+                            getPublishedProducts(port)
+                        }, 1000)
                     }
                 }, settings.timeScrollUp)
             } else {
