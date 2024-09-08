@@ -9,11 +9,12 @@ function generateId(productName) {
   	return formattedName.trim()
 }
 
-function scrollToUp(period) {  
+function scrollToUp(divMessagesContainer, period) {  
 
     period = period.split('|')
 
-    document.querySelector('._ajyl').scrollTop = 0
+    // document.querySelector('._ajyl').scrollTop = 0
+    divMessagesContainer.scrollTop = 0
 
     let days = [] 
     const findDays = document.querySelectorAll('._amjw._amk1._aotl.focusable-list-item')
@@ -32,6 +33,41 @@ function getPrice(text) {
     var price = text.match(regex)
     if(!price) return 0
     return parseFloat( price[0].replace(',','.') )
+}
+
+function getRowsForDay(day = 'HOJE') {
+    day = day.trim().toLowerCase()
+
+    const dates = document.querySelectorAll('.focusable-list-item')
+    
+    // Encontre o elemento que corresponde ao dia especificado
+    let startCollecting = false
+    let rows = []
+    
+    dates.forEach(dateElement => {
+        const spanText = dateElement.querySelector('span').textContent.trim().toLowerCase()
+        
+        if (spanText === day) {
+            startCollecting = true
+        } else if (startCollecting && spanText.match(/^[A-Z]/)) {
+            startCollecting = false
+        }
+        
+        if (startCollecting) {
+            // Pegar as rows após o dia correspondente
+            let sibling = dateElement.nextElementSibling
+            
+            while (sibling && !sibling.classList.contains('focusable-list-item')) {
+                if (sibling.getAttribute('role').includes('row')) {
+                    rows.push(sibling)
+                }
+
+                sibling = sibling.nextElementSibling
+            }
+        }
+    })
+    
+    return rows
 }
 
 function getPublishedProducts(port) {
@@ -163,6 +199,11 @@ function getNameChatSelected() {
     return chatSelected.querySelector('div[role*="gridcell"]').querySelector('span').innerText
 }
 
+function hasElementScroll(element) {
+    return element.scrollHeight > element.clientHeight;
+}
+
+
 function init(port, params) {
     const jsonData = document.querySelector('#app').getAttribute('json-data')
         
@@ -175,22 +216,35 @@ function init(port, params) {
             const groupName = header.querySelector('span').innerText.toLowerCase().trim()
 
             if(localStorage.getItem('EXT_GROUP_NAME').toLowerCase() === groupName) {
-                if(jsonData) {
-                    getMessages(port,params,groupName)
+
+                if(document.querySelectorAll('.message-in.focusable-list-item').length === 0) {
+                    port.postMessage({message:'notFound'})
                     return;
                 }
 
-                const toUp = setInterval(function(){
-                    const find = scrollToUp(params.period)
-                    if(find) {
-                        clearInterval(toUp)
-                        
-                        setTimeout(()=> {
-                            getMessages(port,params,groupName)
-                            getPublishedProducts(port)
-                        }, 1000)
-                    }
-                }, settings.timeScrollUp)
+                if(jsonData) {
+                    getMessages(port,params, groupName)
+                    return;
+                }
+
+                const divMessagesContainer = document.querySelector('._ajyl')
+
+                if( hasElementScroll(divMessagesContainer) ) {
+                    const toUp = setInterval(function() {
+                        const find = scrollToUp(divMessagesContainer, params.period)
+                        if(find) {
+                            clearInterval(toUp)
+                            
+                            setTimeout( () => {
+                                getMessages(port,params,groupName)
+                                getPublishedProducts(port)
+                            }, 1000 )
+                        }
+                    }, settings.timeScrollUp)
+                } else {
+                    port.postMessage({message:'notFound'})
+                }
+
             } else {
                 port.postMessage({message:'notFound'})
             }
