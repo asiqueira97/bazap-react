@@ -1,5 +1,5 @@
 import React from 'react'
-import { randomNumber } from '../../utils/utils'
+import { timeToSeconds, secondsToTime } from '../../utils/utils'
 import style from './style.scss'
 
 function ProductSoldCard({ product, products }) {
@@ -8,25 +8,28 @@ function ProductSoldCard({ product, products }) {
     const productName = messages[0].product
     const image = messages[0].imageUrl
 
-    const seconds = []                                
-    function addSecond(number) {     
-        if( seconds.includes(number) || seconds.length === messages.length )	return
-        
-        seconds.push(number)
-        
-        for( let i=1;i<=messages.length;i++ ) {
-            let numberRandom = randomNumber(15,40)
-            addSecond(numberRandom)
-        }    
-    }
+    const usedSeconds = {};
+    
+    const getUniqueRandomSeconds = (baseTime) => {
+        const baseSeconds = timeToSeconds(baseTime);
 
-    addSecond(randomNumber(15,30), messages.length)
+        if (!usedSeconds[baseSeconds]) usedSeconds[baseSeconds] = new Set();
 
-    seconds.sort( (a,b) => a - b )
+        let randomSeconds;
+        do {
+            randomSeconds = baseSeconds + Math.floor(Math.random() * 60);
+        } while (usedSeconds[baseSeconds].has(randomSeconds));
 
-    console.log('\n')
-    console.log('\n')
-    console.log(productName)
+        usedSeconds[baseSeconds].add(randomSeconds);
+
+        return randomSeconds;
+    };
+
+    const seconds = messages.map(msg => {
+        const time = msg.date.split(',')[0].trim()
+        const uniqueSeconds = getUniqueRandomSeconds(time);
+        return secondsToTime(uniqueSeconds);
+    });
 
     return (
         <div className="product-sold-card">
@@ -47,12 +50,9 @@ function ProductSoldCard({ product, products }) {
                     </thead>
 
                     <tbody>
-                        {messages.map((message, index) => {     
-                            console.log(message)                       
+                        {messages.map((message, index) => {                     
                             const contact = message.name || message.number
-                            const time = message.date.split(',')[0].trim()
-                            let second = seconds[index]
-                            second = `${ second < 10 ? `0${second}` : second }`
+                            let time = seconds[index]
 
                             return (
                                 <tr key={index}>
@@ -66,7 +66,7 @@ function ProductSoldCard({ product, products }) {
                                     </td>
                                     <td>{contact.trim()}</td>
                                     <td>{message.interest}</td>
-                                    <td><strong>{time}:{second}</strong></td>
+                                    <td><strong>{time}</strong></td>
                                 </tr>
                             )
                         })}
