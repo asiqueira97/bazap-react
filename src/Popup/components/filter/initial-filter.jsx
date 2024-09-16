@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import { useBazapContext } from "../../context/BazapContext.jsx";
 import { getLastWeekdayDate, getOptionsSelectInitialFilter } from "../../utils/utils.js";
+import LoadingImage from '../../../assets/loading.gif'
 
 export const Filter = () => {
 
@@ -41,9 +42,12 @@ export const Filter = () => {
                         ))}
                     </select>
                 </div>
-                <button type="button" onClick={handleClick}>
+
+                <button type="button" onClick={handleClick} disabled={loadingSearch} >
                     {loadingSearch ? 'Aguarde...' : 'Gerar relatório'}
                 </button>
+
+                { loadingSearch && <img width="30" src={LoadingImage} alt={'Carregando'} style={{alignSelf: 'center'}} /> }
             </form>
         </div>
     )

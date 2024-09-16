@@ -45,6 +45,11 @@
                         background-color: #ef773b;
 
                     }
+
+                    &:disabled {
+                        background-color: #504d4c;
+                        cursor: not-allowed;
+                    }
                 }
             }
         }

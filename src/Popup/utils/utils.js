@@ -27,6 +27,18 @@ export function sortMessagesByTime(array, startTime, endTime) {
     return filteredArray
 }
 
+export const timeToSeconds = (time) => {
+  const [hours, minutes] = time.split(':').map(Number);
+  return hours * 3600 + minutes * 60;
+};
+
+export const secondsToTime = (seconds) => {
+  const hours = Math.floor(seconds / 3600).toString().padStart(2, '0');
+  const minutes = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+  const secs = (seconds % 60).toString().padStart(2, '0');
+  return `${hours}:${minutes}:${secs}`;
+};
+
 export function groupByClient(messages) {
 
     let resultado = {}
@@ -35,7 +47,7 @@ export function groupByClient(messages) {
       const objeto = messages[chave]
   
       if(objeto) {
-        let nome = objeto?.name.trim().length > 0 ? objeto?.name : 'Desconhecido'
+        let nome = objeto?.name.trim().length > 0 ? objeto?.name : objeto?.number
         nome = nome.trim().replaceAll('"', '')
   
         if (!resultado[nome]) {

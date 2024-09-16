@@ -9,6 +9,25 @@ function generateId(productName) {
   	return formattedName.trim()
 }
 
+function getContactNumber(str) {
+    const regex = /(\+55 \d{2} \d{5}-\d{4})/g;
+    const numeros = str.match(regex);
+    return numeros ? numeros[0] : [];
+}
+  
+function getTime(str) {
+    const regex = /\[(\d{2}:\d{2}), (\d{2}\/\d{2}\/\d{4})\]/;
+    const match = str.match(regex);
+    if (match) {
+        return {
+        time: match[1],
+        date: match[2]
+        };
+    } else {
+        return null;
+    }
+}
+
 function scrollToUp(divMessagesContainer, period) {  
 
     period = period.split('|')
@@ -141,9 +160,8 @@ function getMentionedMessages() {
                     const name = nameContainer.querySelector('span').innerText.trim()
 
                     const date = sender.split(']')[0].replace('[','')
-                    const number = sender.split(']')[1].trim()
-
-                    const isSaved = number.toLowerCase().includes(name.toLowerCase())
+                    const time = getTime(sender)
+                    const number = getContactNumber(sender)
 
                     let imageProfile = ''
                     if(profileImageContainer) {
@@ -161,11 +179,12 @@ function getMentionedMessages() {
                         imageUrl,
                         interest,
                         date,
+                        time,
                         imageProfile,
                         price,
+                        number,
                         sender: sender.slice(0, -2),
                         product: product.innerText.trim(),
-                        number: isSaved ? '' : number.replace(':','')
                     }
 
                     if(price > 0) {

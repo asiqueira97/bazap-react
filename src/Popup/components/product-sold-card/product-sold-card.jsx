@@ -24,6 +24,10 @@ function ProductSoldCard({ product, products }) {
 
     seconds.sort( (a,b) => a - b )
 
+    console.log('\n')
+    console.log('\n')
+    console.log(productName)
+
     return (
         <div className="product-sold-card">
             <div className="product-image">
@@ -43,8 +47,9 @@ function ProductSoldCard({ product, products }) {
                     </thead>
 
                     <tbody>
-                        {messages.map((message, index) => {                            
-                            const contact = message.name ? message.name.trim() : message.number.trim()
+                        {messages.map((message, index) => {     
+                            console.log(message)                       
+                            const contact = message.name || message.number
                             const time = message.date.split(',')[0].trim()
                             let second = seconds[index]
                             second = `${ second < 10 ? `0${second}` : second }`
@@ -59,7 +64,7 @@ function ProductSoldCard({ product, products }) {
                                             </div>
                                         }
                                     </td>
-                                    <td>{contact.length > 0 ? contact : 'Desconhecido'}</td>
+                                    <td>{contact.trim()}</td>
                                     <td>{message.interest}</td>
                                     <td><strong>{time}:{second}</strong></td>
                                 </tr>
