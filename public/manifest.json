@@ -25,5 +25,5 @@
       "default_icon": "./logo.png",
       "default_popup": "popup.html"
     },
-    "host_permissions": ["https://brechoale.com.br/*"]
+    "host_permissions": ["https://brechozito.com.br/*"]
   }
