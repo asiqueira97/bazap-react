@@ -121,7 +121,7 @@ function getPublishedProducts(port) {
                         id,
                         name: text,
                         urlImages,
-                        flag: 'imagem'
+                        flag: 'foto'
                     })
                 }
             } 
