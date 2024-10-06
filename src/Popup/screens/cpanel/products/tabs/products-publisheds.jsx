@@ -22,7 +22,12 @@ function ProductsPublisheds() {
 
     return (
         <div className="Products__content">
-            <Search title={'publicados'} total={productList.length} onChange={handleSearch}/>
+            <div>
+                <div className="flex-row justify-between align-center" style={{margin: '15px 0px'}}>
+                    <h3>Publicados ({productList.length})</h3>
+                </div>
+                <Search onChange={handleSearch} />
+            </div>
 
             <div className="products">
                 { productList.map((product, index) => {

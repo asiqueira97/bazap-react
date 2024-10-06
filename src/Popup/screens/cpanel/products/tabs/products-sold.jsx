@@ -22,16 +22,14 @@ function ProductsSold() {
 
     const productList = search.length > 0 ? search : Object.keys( productsSold )
 
-    // const total = productList.filter( product => !['foto','vídeo'].includes(product.toLowerCase()) ).length
-    const total = productList.length
-
     return (
         <div className="Products__content">
-            <Search 
-                title={'mencionados'} 
-                total={total} 
-                onChange={handleSearch}
-            />
+            <div>
+                <div className="flex-row justify-between align-center" style={{margin: '15px 0px'}}>
+                    <h3>Mencionados ({productList.length})</h3>
+                </div>
+                <Search onChange={handleSearch} />
+            </div>
 
             <div className="products-sold">
                 { productList.map((key, index) => (

@@ -1,7 +1,7 @@
-import React, {useState} from 'react'
+import React, {useState, createRef} from 'react'
 import Search from '../../../../components/search/search'
 import ProductCard from '../../../../components/product-card/product-card'
-import { removerAcentos } from '../../../../utils/utils'
+import { removerAcentos, generateProducsAvailable} from '../../../../utils/utils'
 
 function ProductsAvailable() {
 
@@ -26,11 +26,27 @@ function ProductsAvailable() {
 
     const productList = search.length ? search : productsAvailable
 
+    const elRefs = Array(productList.length).fill().map((_, i) => createRef())
+
+    const refTest = createRef()
+
+    const handleClickDownload = () => {
+        console.log('gerar download product')
+        generateProducsAvailable(refTest)
+    }
+
     return (
         <div className="Products__content">
-            <Search title={'publicados'} total={productList.length} onChange={handleSearch} />
 
-            <div className="products">
+            <div>
+                <div className="flex-row justify-between align-center" style={{margin: '15px 0px'}}>
+                    <h3>Disponíveis ({productList.length})</h3>
+                    <button className="download-button" onClick={handleClickDownload}>Baixar</button>
+                </div>
+                <Search onChange={handleSearch} />
+            </div>
+
+            <div className="products" ref={refTest}>
                 { productList.map((product, index) => {
 
                     const newProduct = {
@@ -39,7 +55,7 @@ function ProductsAvailable() {
                     }
 
                     return (
-                        <ProductCard key={index} product={newProduct}  />
+                        <ProductCard key={index} product={newProduct} elementRef={elRefs[index]}  />
                     )
                 }) }
             </div>

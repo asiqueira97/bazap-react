@@ -1,6 +1,7 @@
 import { toJpeg } from "html-to-image"
 import html2canvas from "html2canvas"
 import jsPDF from "jspdf"
+import html2pdf from 'html2pdf.js';
 import * as JSZip from "jszip"
 
 export const randomNumber = (min, max) => {
@@ -118,6 +119,31 @@ export const messagesError = {
   'notAllowed': 'Ops! Você não tem permissão para executar essa extensão.'
 }
 
+export const generateProducsAvailable = async (elementRef) => {
+    const input = elementRef.current
+
+    const productCards = input.querySelectorAll('.product-card')
+
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth()
+
+    for (let i = 0; i < productCards.length; i++) {
+      const product = productCards[i];
+
+      const canvas = await html2canvas(product, { scale: 2 })
+      const imgData = canvas.toDataURL('image/png')
+      const imgHeight = canvas.height;
+      
+      if (i > 0) {
+        pdf.addPage()
+      }
+
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight * 0.60)
+    }
+
+    pdf.save('Produtos_Disponiveis.pdf')
+}
+
 export const htmlToImageConvert = async (elementRef) => {
   return await toJpeg(elementRef.current, { cacheBust: false })
 }
@@ -128,11 +154,10 @@ export const generateReportImages = async (productList, elRefs) => {
 
   var zip = new JSZip()
   result.forEach((imgData, index) => {
-      const clientName = productList[index].trim()
-      let fileName = clientName.length > 0 ? clientName : 'Desconhecido'
-      fileName.replaceAll('/','')
-      zip.file(`${fileName}.jpg`, imgData.split(',')[1], { base64: true })
-      
+    const clientName = productList[index].trim()
+    let fileName = clientName.length > 0 ? clientName : 'Desconhecido'
+    fileName.replaceAll('/','')
+    zip.file(`${fileName}.jpg`, imgData.split(',')[1], { base64: true })
   })
 
   zip.generateAsync({type:"base64"}).then(function (content) {
