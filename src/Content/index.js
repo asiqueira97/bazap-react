@@ -246,7 +246,7 @@ function init(port, params) {
                     return;
                 }
 
-                const divMessagesContainer = document.querySelector('._ajyl')
+                const divMessagesContainer = document.querySelector('.xjbqb8w.x1ewm37j')
 
                 if( hasElementScroll(divMessagesContainer) ) {
                     const toUp = setInterval(function() {
