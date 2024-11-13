@@ -1,7 +1,6 @@
 import { toJpeg } from "html-to-image"
 import html2canvas from "html2canvas"
 import jsPDF from "jspdf"
-import html2pdf from 'html2pdf.js';
 import * as JSZip from "jszip"
 
 export const randomNumber = (min, max) => {
@@ -68,11 +67,14 @@ export function groupByClient(messages) {
   }
 
   export const getPrice = (text) => {
-    var regex = /[0-9]+,.[0-9]+/;
-    var price = text.trim().match(regex)
-    if(!price) return 0
+    const regex = /R?\$ ?\d{1,3}(\.\d{3})*(,\d{2})?/g;
+    let matches = text.match(regex);
 
-    return parseFloat( price[0].replace(',','.') )
+    if(matches) {
+      matches = text.match(/R\$ ?(\d+,\d{2}|\d+)/);
+    }
+      
+    return matches ? parseFloat(matches[1].replace(',', '.')) : 0;
   }
 
   export function mountProductListByPerson(data) {
@@ -154,10 +156,13 @@ export const generateReportImages = async (productList, elRefs) => {
 
   var zip = new JSZip()
   result.forEach((imgData, index) => {
-    const clientName = productList[index].trim()
-    let fileName = clientName.length > 0 ? clientName : 'Desconhecido'
-    fileName.replaceAll('/','')
-    zip.file(`${fileName}.jpg`, imgData.split(',')[1], { base64: true })
+    let clientName = productList[index]
+    if(clientName) {
+      clientName = clientName.trim()
+      let fileName = clientName.length > 0 ? clientName : 'Desconhecido'
+      fileName.replaceAll('/','')
+      zip.file(`${fileName}.jpg`, imgData.split(',')[1], { base64: true })
+    }
   })
 
   zip.generateAsync({type:"base64"}).then(function (content) {
