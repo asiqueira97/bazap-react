@@ -47,11 +47,30 @@ function scrollToUp(divMessagesContainer, period) {
     return checkInclude || document.querySelectorAll('span[data-icon="lock-small"]').length == 1
 }
 
-function getPrice(text) {
+function getPriceOld(text) {
     var regex = /[0-9]+,.[0-9]+/;
     var price = text.match(regex)
     if(!price) return 0
     return parseFloat( price[0].replace(',','.') )
+}
+
+function getPrice(texto){
+	const regexComCifrao = /R\$ ?(\d{1,3}(?:\.\d{3})*),(\d{2})/g;
+    let match = regexComCifrao.exec(texto);
+
+    if (match) {
+        const valor = match[1].replace(/\./g, '') + '.' + match[2];
+        return parseFloat(valor);
+    }
+    
+    const regexSemCifrao = /(\d+(?:,\d{2})?)/g;
+    match = regexSemCifrao.exec(texto);
+
+    if (match) {
+        return parseFloat(match[1].replace(',', '.'));
+    }
+    
+    return 0
 }
 
 function getRowsForDay(day = 'HOJE') {
@@ -200,6 +219,8 @@ function getMentionedMessages() {
 
 function getMessages(port, params, groupName) {
     const messages = getMentionedMessages()
+
+    console.log('messages', messages)
 
     if(messages.length > 0) {
         const domInfo = { groupName, messages, params }

@@ -67,14 +67,22 @@ export function groupByClient(messages) {
   }
 
   export const getPrice = (text) => {
-    const regex = /R?\$ ?\d{1,3}(\.\d{3})*(,\d{2})?/g;
-    let matches = text.match(regex);
+    const regexComCifrao = /R\$ ?(\d{1,3}(?:\.\d{3})*),(\d{2})/g;
+    let match = regexComCifrao.exec(text);
 
-    if(matches) {
-      matches = text.match(/R\$ ?(\d+,\d{2}|\d+)/);
+    if (match) {
+        const valor = match[1].replace(/\./g, '') + '.' + match[2];
+        return parseFloat(valor);
     }
-      
-    return matches ? parseFloat(matches[1].replace(',', '.')) : 0;
+    
+    const regexSemCifrao = /(\d+(?:,\d{2})?)/g;
+    match = regexSemCifrao.exec(text);
+
+    if (match) {
+        return parseFloat(match[1].replace(',', '.'));
+    }
+    
+    return 0
   }
 
   export function mountProductListByPerson(data) {
@@ -84,6 +92,8 @@ export function groupByClient(messages) {
     for( let prop in messagesOrdered ) {
 
       const productName = messagesOrdered[prop][0].product
+
+      console.log('price', getPrice(productName))
 
       if( getPrice(productName) === 0 ) continue
 
