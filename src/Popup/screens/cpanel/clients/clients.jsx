@@ -32,6 +32,12 @@ function Clients() {
         handleModal('report-clients','open')
     }
 
+    if(productList.length === elRefs.length) {
+        setTimeout( () => {
+            generateReportImages(productList, elRefs)
+        }, 3000 )
+    }
+
     return (
         <>
             <div className="Dashboard__Clients">
@@ -71,6 +77,7 @@ function Clients() {
                         <button
                             className="download-button"
                             onClick={() => generateReportPdf(elRefs)}
+                            data-name="pdf"
                         >
                             PDF
                         </button>
@@ -78,6 +85,7 @@ function Clients() {
                         <button 
                             className="download-button" 
                             onClick={() => generateReportImages(productList, elRefs)}
+                            data-name="images"
                         >
                             IMAGENS
                         </button>

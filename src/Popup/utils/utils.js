@@ -47,8 +47,8 @@ export function groupByClient(messages) {
       const objeto = messages[chave]
   
       if(objeto) {
-        let nome = objeto?.name.trim().length > 0 ? objeto?.name : objeto?.number
-        nome = nome.trim().replaceAll('"', '')
+        let nome = objeto?.name?.trim().length > 0 ? objeto?.name : objeto?.number
+        nome = nome?.trim().replaceAll('"', '')
   
         if (!resultado[nome]) {
           resultado[nome] = []
@@ -67,19 +67,27 @@ export function groupByClient(messages) {
   }
 
   export const getPrice = (text) => {
-    const regexComCifrao = /R\$ ?(\d{1,3}(?:\.\d{3})*),(\d{2})/g;
-    let match = regexComCifrao.exec(text);
-
+    const regexComCifrao = /R\$ ?(\d{1,3}(?:\.\d{3})*),(\d{2})/g
+    
+    let match = regexComCifrao.exec(text)
     if (match) {
-        const valor = match[1].replace(/\./g, '') + '.' + match[2];
-        return parseFloat(valor);
+        const valor = match[1].replace(/\./g, '') + '.' + match[2]
+        return parseFloat(valor)
     }
     
-    const regexSemCifrao = /(\d+(?:,\d{2})?)/g;
-    match = regexSemCifrao.exec(text);
+    const regexComCifraoSemR = /\$?(\d{1,3}(?:\.\d{3})*),(\d{2})/g
+    
+    let match1 = regexComCifraoSemR.exec(text)
+    if (match1) {
+        const valor = match1[1].replace(/\./g, '') + '.' + match1[2]
+        return parseFloat(valor)
+    }
+    
+    const regexSemCifrao = /(\d+(?:,\d{2})?)/g
+    match = regexSemCifrao.exec(text)
 
     if (match) {
-        return parseFloat(match[1].replace(',', '.'));
+        return parseFloat(match[1].replace(',', '.'))
     }
     
     return 0
@@ -116,6 +124,14 @@ export function groupByClient(messages) {
     const grouped = getMessagesOrdered(data.messages, data.params.times)
     localStorage.setItem('products-mentioned', JSON.stringify(grouped))
 }
+
+export const getCurrentDate = () => {
+  const today = new Date();
+  const day = String(today.getDate()).padStart(2, '0');
+  const month = String(today.getMonth() + 1).padStart(2, '0'); // Os meses começam em 0
+  const year = today.getFullYear();
+  return `${day}-${month}-${year}`;
+};
 
 export const optionsProductsPage = [
   {name:'mencionados', active: true},
@@ -178,7 +194,7 @@ export const generateReportImages = async (productList, elRefs) => {
   zip.generateAsync({type:"base64"}).then(function (content) {
       const link = document.createElement("a")
       link.href = "data:application/zip;base64," + content
-      link.download = "Vendas.zip"
+      link.download = `Vendas.zip`
       link.click()
   })
 }
@@ -220,7 +236,7 @@ export const generateReportPdf = async (elRefs) => {
     await addImageToPDF(base64Image);
   }
 
-  doc.save('Vendas.pdf');
+  doc.save(`Vendas.pdf`);
 };
 
 export const getOptionsSelectInitialFilter = (postDay) => {
@@ -231,6 +247,8 @@ export const getOptionsSelectInitialFilter = (postDay) => {
   let filterDaysWeek = { "HOJE": "ONTEM" }
     
   filterDaysWeek[`ÚLTIMA ${postDay}`] = scrollTo.toUpperCase()
+
+  filterDaysWeek[`ÚLTIMA SEXTA-FEIRA`] = 'QUINTA-FEIRA'
     
   const today = dayName[new Date().getDay()].toUpperCase()
 
