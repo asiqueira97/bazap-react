@@ -54,20 +54,28 @@ function getPriceOld(text) {
     return parseFloat( price[0].replace(',','.') )
 }
 
-function getPrice(texto){
-	const regexComCifrao = /R\$ ?(\d{1,3}(?:\.\d{3})*),(\d{2})/g;
-    let match = regexComCifrao.exec(texto);
-
+function getPrice(text){
+	const regexComCifrao = /R\$ ?(\d{1,3}(?:\.\d{3})*),(\d{2})/g
+    
+    let match = regexComCifrao.exec(text)
     if (match) {
-        const valor = match[1].replace(/\./g, '') + '.' + match[2];
-        return parseFloat(valor);
+        const valor = match[1].replace(/\./g, '') + '.' + match[2]
+        return parseFloat(valor)
     }
     
-    const regexSemCifrao = /(\d+(?:,\d{2})?)/g;
-    match = regexSemCifrao.exec(texto);
+    const regexComCifraoSemR = /\$?(\d{1,3}(?:\.\d{3})*),(\d{2})/g
+    
+    let match1 = regexComCifraoSemR.exec(text)
+    if (match1) {
+        const valor = match1[1].replace(/\./g, '') + '.' + match1[2]
+        return parseFloat(valor)
+    }
+    
+    const regexSemCifrao = /(\d+(?:,\d{2})?)/g
+    match = regexSemCifrao.exec(text)
 
     if (match) {
-        return parseFloat(match[1].replace(',', '.'));
+        return parseFloat(match[1].replace(',', '.'))
     }
     
     return 0
@@ -172,7 +180,8 @@ function getMentionedMessages() {
             if(messageValid) {
                 const image = images[1] || images[0]
                 const imageUrl = image.getAttribute('style').replace('background-image: url(', '').replace(');', '').replace(/[\\"]/g, '')
-                const nameContainer = quoteContainer.parentElement.querySelector('.x78zum5')
+                //const nameContainer = quoteContainer.parentElement.querySelector('.x78zum5')
+                const nameContainer = quoteContainer.parentElement.querySelectorAll('div')[0]
 
                 if(imageUrl !== '' && nameContainer) {
                     const id = generateId(product.innerText)

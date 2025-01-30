@@ -19,7 +19,6 @@ function ProductCardClient({productList, index, elementRef}) {
         <div className="ProductCardClient" ref={elementRef}>
             <div className="infoClient">
                 <div className="info">
-                    { profileImage ? <img className="profileImage" src={profileImage} /> : <div className="profileBgCircle">{index.trim()[0]}</div>}
                     <h3>{index}</h3>
                 </div>
 

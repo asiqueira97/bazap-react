@@ -16,7 +16,7 @@ export default function BazapContextProvider({children}) {
   
   const [showPix, setShowPix] = useState(false)
   
-  const [currentPage, setCurrentPage] = useState('dashboard')
+  const [currentPage, setCurrentPage] = useState('clients')
 
   const [loadingSearch, setLoadingSearch] = useState(false)
 
