@@ -125,7 +125,7 @@ export function groupByClient(messages) {
     localStorage.setItem('products-mentioned', JSON.stringify(grouped))
 }
 
-export const getCurrentDate = () => {
+const getCurrentDate = () => {
   const today = new Date();
   const day = String(today.getDate()).padStart(2, '0');
   const month = String(today.getMonth() + 1).padStart(2, '0'); // Os meses começam em 0
@@ -173,7 +173,11 @@ export const generateProducsAvailable = async (elementRef) => {
 }
 
 export const htmlToImageConvert = async (elementRef) => {
-  return await toJpeg(elementRef.current, { cacheBust: false })
+  try {
+    return await toJpeg(elementRef.current, { cacheBust: false })
+  } catch(e) {
+    console.error('fn: htmlToImageConvert [toJpeg]', elementRef?.current)
+  }
 }
 
 export const generateReportImages = async (productList, elRefs) => {
@@ -194,13 +198,17 @@ export const generateReportImages = async (productList, elRefs) => {
   zip.generateAsync({type:"base64"}).then(function (content) {
       const link = document.createElement("a")
       link.href = "data:application/zip;base64," + content
-      link.download = `Vendas.zip`
+      link.download = `Vendas-${getCurrentDate()}.zip`
       link.click()
   })
 }
 
 export const createCanvas = async (elementRef) => {
-  return await html2canvas(elementRef.current)
+  try {
+    return await html2canvas(elementRef?.current)
+  }catch(e) {
+    console.error('fn: createCanvas [html2canvas]', elementRef?.current)
+  }
 }
 
 export const generateReportPdf = async (elRefs) => {
@@ -233,10 +241,14 @@ export const generateReportPdf = async (elRefs) => {
   };
 
   for (const base64Image of imagesBase64) {
-    await addImageToPDF(base64Image);
+    try {
+      await addImageToPDF(base64Image);
+    } catch(e) {
+      console.error('Error: [addImageToPDF]');
+    }
   }
 
-  doc.save(`Vendas.pdf`);
+  doc.save(`Vendas-${getCurrentDate()}.pdf`);
 };
 
 export const getOptionsSelectInitialFilter = (postDay) => {
