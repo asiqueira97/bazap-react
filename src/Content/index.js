@@ -1,42 +1,21 @@
+import {
+    generateId,
+    getContactNumber,
+    getTime,
+    getPrice,
+    verificarEmoji
+} from './utils/utils'
+
 const settings = { timeScrollUp: 1 }
-
-function generateId(productName) {
-    let formattedName = productName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    formattedName = formattedName.replace(/[/,\s.]+/g, '-');
-    formattedName = formattedName.replace(/-+/g, '-');
-    formattedName = formattedName.replace(/^-|-$/g, '');
-  
-  	return formattedName.trim()
-}
-
-function getContactNumber(str) {
-    const regex = /(\+55 \d{2} \d{5}-\d{4})/g;
-    const numeros = str.match(regex);
-    return numeros ? numeros[0] : [];
-}
-  
-function getTime(str) {
-    const regex = /\[(\d{2}:\d{2}), (\d{2}\/\d{2}\/\d{4})\]/;
-    const match = str.match(regex);
-    if (match) {
-        return {
-        time: match[1],
-        date: match[2]
-        };
-    } else {
-        return null;
-    }
-}
 
 function scrollToUp(divMessagesContainer, period) {  
 
     period = period.split('|')
-
-    // document.querySelector('._ajyl').scrollTop = 0
+    
     divMessagesContainer.scrollTop = 0
 
     let days = [] 
-    const findDays = document.querySelectorAll('._amjw._amk1._aotl.focusable-list-item')
+    const findDays = document.querySelectorAll('.x1n2onr6.x9f619')
     
     findDays.forEach(day => days.push(day.innerText.toUpperCase()))
 
@@ -47,74 +26,6 @@ function scrollToUp(divMessagesContainer, period) {
     return checkInclude || document.querySelectorAll('span[data-icon="lock-small"]').length == 1
 }
 
-function getPriceOld(text) {
-    var regex = /[0-9]+,.[0-9]+/;
-    var price = text.match(regex)
-    if(!price) return 0
-    return parseFloat( price[0].replace(',','.') )
-}
-
-function getPrice(text){
-	const regexComCifrao = /R\$ ?(\d{1,3}(?:\.\d{3})*),(\d{2})/g
-    
-    let match = regexComCifrao.exec(text)
-    if (match) {
-        const valor = match[1].replace(/\./g, '') + '.' + match[2]
-        return parseFloat(valor)
-    }
-    
-    const regexComCifraoSemR = /\$?(\d{1,3}(?:\.\d{3})*),(\d{2})/g
-    
-    let match1 = regexComCifraoSemR.exec(text)
-    if (match1) {
-        const valor = match1[1].replace(/\./g, '') + '.' + match1[2]
-        return parseFloat(valor)
-    }
-    
-    const regexSemCifrao = /(\d+(?:,\d{2})?)/g
-    match = regexSemCifrao.exec(text)
-
-    if (match) {
-        return parseFloat(match[1].replace(',', '.'))
-    }
-    
-    return 0
-}
-
-function getRowsForDay(day = 'HOJE') {
-    day = day.trim().toLowerCase()
-
-    const dates = document.querySelectorAll('.focusable-list-item')
-    
-    // Encontre o elemento que corresponde ao dia especificado
-    let startCollecting = false
-    let rows = []
-    
-    dates.forEach(dateElement => {
-        const spanText = dateElement.querySelector('span').textContent.trim().toLowerCase()
-        
-        if (spanText === day) {
-            startCollecting = true
-        } else if (startCollecting && spanText.match(/^[A-Z]/)) {
-            startCollecting = false
-        }
-        
-        if (startCollecting) {
-            // Pegar as rows após o dia correspondente
-            let sibling = dateElement.nextElementSibling
-            
-            while (sibling && !sibling.classList.contains('focusable-list-item')) {
-                if (sibling.getAttribute('role').includes('row')) {
-                    rows.push(sibling)
-                }
-
-                sibling = sibling.nextElementSibling
-            }
-        }
-    })
-    
-    return rows
-}
 
 function getPublishedProducts(port) {
     let products = []
@@ -165,31 +76,53 @@ function getMentionedMessages() {
     document.querySelectorAll('div[aria-label="Mensagem citada"]').forEach( quoteMessage => {
         const quoteContainer = quoteMessage.parentElement.parentElement.parentElement
         const product = quoteContainer.querySelector('.quoted-mention')
-        const sender = quoteContainer.getAttribute('data-pre-plain-text')
         const images = quoteContainer.querySelectorAll('.x18d0r48')
+        const emojiContainer = quoteContainer.querySelector('._am2u._ar8h')
+
+        let sender = quoteContainer.getAttribute('data-pre-plain-text')
         let interest = quoteContainer.querySelector('._akbu')
 
         const allCard = quoteContainer.parentElement.parentElement.parentElement.parentElement;
         const profileImageContainer = allCard.querySelector('div[aria-label*="Abrir os dados da conversa"]')
-    
-        if(product && images.length > 0 && sender && interest) {
 
-            interest = interest.querySelector('.selectable-text').innerText
-            const messageValid = localStorage.getItem('EXT_KEYWORDS').split(',').some((key) => interest.toLowerCase().includes(key))
+        if(!sender && emojiContainer) {
+            sender = quoteContainer.querySelector('._am2m').querySelector('span').getAttribute('aria-label') || quoteContainer.querySelector('._am2m').querySelectorAll('span')[1].text
+        }
+
+        if(product && images.length > 0 && sender && (interest || emojiContainer) ) {
+
+            let messageValid = false
+
+            if( interest && !emojiContainer ) {
+                interest = interest.querySelector('.selectable-text').innerText
+                messageValid = localStorage.getItem('EXT_KEYWORDS').split(',').some((key) => interest.toLowerCase().includes(key))
+            } else {
+                interest = 'Quero (emoji)'
+                messageValid = verificarEmoji(emojiContainer)
+            }
 
             if(messageValid) {
                 const image = images[1] || images[0]
                 const imageUrl = image.getAttribute('style').replace('background-image: url(', '').replace(');', '').replace(/[\\"]/g, '')
-                //const nameContainer = quoteContainer.parentElement.querySelector('.x78zum5')
                 const nameContainer = quoteContainer.parentElement.querySelectorAll('div')[0]
 
                 if(imageUrl !== '' && nameContainer) {
                     const id = generateId(product.innerText)
                     const name = nameContainer.querySelector('span').innerText.trim()
 
-                    const date = sender.split(']')[0].replace('[','')
-                    const time = getTime(sender)
-                    const number = getContactNumber(sender)
+                    let date = sender.split(']')[0].replace('[','') || 'QUARTA-FEIRA'
+                    let time = ''
+                    let number = ''
+
+                    if(interest && !emojiContainer) {
+                        time = getTime(sender)
+                        number = getContactNumber(sender)
+                    } else {
+                        time = {
+                            time: emojiContainer.querySelectorAll('div')[1].querySelector('span').text,
+                            date: date
+                        }
+                    }
 
                     let imageProfile = ''
                     if(profileImageContainer) {
