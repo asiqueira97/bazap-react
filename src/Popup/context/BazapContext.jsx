@@ -14,7 +14,7 @@ export default function BazapContextProvider({children}) {
 
   const [hasPermission, setHasPermission] = useState(false)
   
-  const [showPix, setShowPix] = useState(false)
+  const [showPix, setShowPix] = useState(true)
   
   const [currentPage, setCurrentPage] = useState('clients')
 
