@@ -1,8 +1,19 @@
 {
-    "id": "bzpcl-0001",
-    "allowedNumbers": ["5511971823735", "5511963946174", "5511980574840", "5511933301819"],
-    "groupName": "brechó alê&alê",
-    "postDay": "quarta-feira",
-    "keywords": ["qr","qero","quero","desisto","fila"],
-    "active": true
+  "id": "bzpcl-0001",
+  "allowedNumbers": [
+    "5511971823735",
+    "5511963946174",
+    "5511980574840",
+    "5511933301819"
+  ],
+  "groupName": "brechó alê&alê",
+  "postDayOfWeek": "quarta-feira",
+  "keywords": [
+    "qr",
+    "qero",
+    "quero",
+    "desisto",
+    "fila"
+  ],
+  "active": true
 }

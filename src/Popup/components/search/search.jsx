@@ -1,12 +1,12 @@
-import React from 'react'
-import style from './style.scss'
+import React from 'react';
+import style from './style.scss';
 
-function Search({placeholder, onChange}) {
-    return (
-        <div className="search">
-            <input type="text" placeholder={placeholder || 'Buscar'} onChange={onChange}/>
-        </div>
-    )
+function Search({ placeholder, onChange }) {
+  return (
+    <div className="search">
+      <input type="text" placeholder={placeholder || 'Buscar'} onChange={onChange} />
+    </div>
+  );
 }
 
-export default Search
+export default Search;

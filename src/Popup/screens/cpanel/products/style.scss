@@ -1,43 +1,94 @@
 .Dashboard__Products {
-    padding-top: 5px;
+  padding-top: 5px;
 
-    .Products__content {
-        display: flex;
-        flex-direction: column;
+  .Products__content {
+    display: flex;
+    flex-direction: column;
 
-        .products {
-            width: 100%;
-            height: 310px;
-            overflow-y: scroll;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            align-content: start;
-            gap: 8px;
-        }
-
-        .products-sold {
-            flex-direction: column;
-            display: flex;
-            overflow: scroll;
-            width: 100%;
-            height: 320px;
-            overflow-y: scroll;
-            gap: 8px;
-        }
+    .products {
+      width: 100%;
+      height: 310px;
+      overflow-y: scroll;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      align-content: start;
+      gap: 8px;
     }
 
-    .download-button {
-        width: 140px;
-        height: 36px;
-        background-color: #f16925;
-        border-radius: 10px;
-        border: 1px solid #f16925;
-        color: #fff;
+    .products-sold {
+      flex-direction: column;
+      display: flex;
+      overflow: scroll;
+      width: 100%;
+      height: 320px;
+      overflow-y: scroll;
+      gap: 8px;
+    }
+  }
+
+  button {
+    min-width: 160px;
+    padding: 8px;
+    border-radius: 20px;
+    border: 1px solid #f06925;
+    background-color: #fff;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #ef773b;
+      color: #fff;
+    }
+  }
+
+  button.active {
+    background-color: #f06925;
+    color: #fff;
+  }
+
+  .download-button {
+    width: 140px;
+    height: 36px;
+    background-color: #f16925;
+    border-radius: 10px;
+    border: 1px solid #f16925;
+    color: #fff;
+    cursor: pointer;
+    border-bottom: 3px solid #000;
+
+    &:hover {
+      background-color: #ef773b;
+    }
+  }
+
+  .options_container {
+    h4 {
+      color: #a19f9f;
+    }
+
+    .options {
+      padding-top: 10px;
+      display: flex;
+      gap: 10px;
+
+      button {
+        min-width: 160px;
+        padding: 8px;
+        border-radius: 20px;
+        border: 1px solid #f06925;
+        background-color: #fff;
         cursor: pointer;
-        border-bottom: 3px solid #000;
+        color: #000;
 
         &:hover {
-            background-color: #ef773b;
+          background-color: #ef773b;
+          color: #fff;
         }
+      }
+
+      button.active {
+        background-color: #f06925;
+        color: #fff;
+      }
     }
+  }
 }
