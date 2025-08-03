@@ -42,13 +42,17 @@ function Setup({ origin = 'default' }) {
   };
 
   const nextStep = () => {
+
+    if (currentStep === 0 && !formData['salesGroups'].length) {
+      setAlertMessage('SELECIONE O GRUPO')
+      return;
+    }
+
     if (currentStep < steps.length - 1) {
+      setAlertMessage('')
       setCurrentStep((s) => s + 1);
     } else {
-      const config = {
-        ...formData
-      }
-
+      const config = { ...formData }
       chrome.storage.local.set({ config }, () => {
         chrome.runtime.sendMessage({ action: 'getCurrentGroup' }, (response) => {
           if (response?.ok) {
@@ -86,7 +90,7 @@ function Setup({ origin = 'default' }) {
     }
   };
 
-  const { key, Component, title } = steps[currentStep];
+  const { key, Component } = steps[currentStep];
   const stepData = formData[key] || [];
 
   return (

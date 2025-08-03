@@ -45,7 +45,6 @@ function Clients() {
     .fill()
     .map((_, i) => createRef());
 
-  // const handleClickModal = () => handleModal('report-clients', 'open');
   const handleClickModal = () => setModalOpen(true)
 
   return (

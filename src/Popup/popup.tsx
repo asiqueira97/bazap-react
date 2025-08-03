@@ -6,21 +6,34 @@ import { useAppStore } from '../store/useAppStore';
 import LoadingImage from '../assets/loading.gif';
 import { messagesError } from './utils/utils';
 import Alert from './screens/alert/alert';
+import './styles.scss';
+
+type ErrorKey = keyof typeof messagesError;
 
 const Loading = () => {
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      <img width="30" src={LoadingImage} alt={'Carregando'} />
+      <img width="30" src={LoadingImage} alt={'Carregando...'} />
     </div>
   )
 }
 
 const Popup = () => {
-  const { currentView, setCurrentView, setGroups, setAlertMessage, setCurrentGroup } = useAppStore();
+  const {
+    currentView,
+    setCurrentView,
+    setGroups,
+    setAlertMessage,
+    setCurrentGroup,
+    setGroupImage
+  } = useAppStore();
 
   React.useEffect(() => {
     const getAllowedGroups = () => {
       chrome.storage.local.get(['config'], (result) => {
+
+        console.log(result)
+
         const allowedGroupsRaw = result?.config?.salesGroups;
 
         if (allowedGroupsRaw) {
@@ -31,25 +44,27 @@ const Popup = () => {
       });
     };
 
-    const validateCurrentGroup = (allowedGroupsRaw) => {
+    const validateCurrentGroup = (allowedGroupsRaw: any) => {
       chrome.runtime.sendMessage({ action: 'getCurrentGroup' }, (response) => {
         if (!response?.ok) {
-          setAlertMessage(messagesError[response.error]);
+          const errorKey = response?.error as string;
+          setAlertMessage(messagesError[errorKey as ErrorKey]);
           setCurrentView('alert');
           return;
         }
 
-        const { numberLogged, groupName, chats } = response.session;
-        const allowedGroups = allowedGroupsRaw.map(group => group.trim().toLowerCase());
+        const { numberLogged, groupName, chats, groupImage } = response.session;
+        const allowedGroups = allowedGroupsRaw.map((group: any) => group.trim().toLowerCase());
         const isGroupAllowed = allowedGroups.includes(groupName);
 
         if (!isGroupAllowed) {
-          setAlertMessage(messagesError['invalidGroup']);
+          setAlertMessage(messagesError.invalidGroup);
           setCurrentView('alert');
           return;
         }
 
         chrome.storage.local.set({ whatsappGroupsList: chats }, () => {
+          setGroupImage(groupImage)
           setCurrentGroup(groupName)
           setGroups(chats);
           setCurrentView('initial');
@@ -76,7 +91,7 @@ const Popup = () => {
   }, []);
 
   return (
-    <div className="Bazap__main">
+    <div className={'Bazap__main'}>
       {currentView === 'loading' && <Loading />}
       {currentView === 'alert' && <Alert />}
       {currentView === 'setup' && <Setup />}

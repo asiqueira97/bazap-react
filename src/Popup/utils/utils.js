@@ -3,6 +3,14 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import * as JSZip from 'jszip';
 
+export function normalizeLettersOnly(str) {
+  return str
+    .normalize('NFD')                 // separa letras de acentos
+    .replace(/[\u0300-\u036f]/g, '')  // remove acentos
+    .replace(/[^a-zA-Z]/g, '');       // remove tudo que não for letra
+}
+
+
 export const randomNumber = (min, max) => {
   return Math.round(Math.random() * (max - min) + min);
 };
@@ -178,13 +186,17 @@ export const htmlToImageConvert = async (elementRef) => {
 };
 
 export const generateReportImages = async (productList, elRefs) => {
+
+  console.log('elRefs', elRefs)
+
   const promiseArray = elRefs.map((element) => htmlToImageConvert(element));
   const result = await Promise.all(promiseArray);
 
   var zip = new JSZip();
+
   result.forEach((imgData, index) => {
     let clientName = productList[index];
-    if (clientName) {
+    if (imgData && clientName) {
       clientName = clientName.trim();
       let fileName = clientName.length > 0 ? clientName : 'Desconhecido';
       fileName.replaceAll('/', '');

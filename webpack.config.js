@@ -5,9 +5,9 @@ const path = require('path');
 
 module.exports = {
   entry: {
-    popup: './src/Popup/app.jsx',
+    popup: './src/Popup/app.tsx',
     content: './src/Content/index.js',
-    background: './src/Background/background.js', // <- novo
+    background: './src/Background/background.js',
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -20,7 +20,7 @@ module.exports = {
     rules: [
       {
         test: /\.(js|jsx)$/,
-        exclude: '/node_modules/',
+        exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
           options: {
@@ -30,27 +30,45 @@ module.exports = {
       },
       {
         test: /\.(jpe?g|png|svg|gif)$/i,
-        exclude: '/node_modules/',
+        exclude: /node_modules/,
         loader: 'file-loader',
         options: {
           name: '[name].[ext]',
         },
       },
-      // {
-      //   test: /\.(sa|sc|c)ss$/,
-      //   exclude: '/node_modules/',
-      //   use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
-      // },
-      // {
-      //   test: /\.(css)$/,
-      //   use: ['css-loader', 'style-loader'],
-      // },
       {
-        test: /\.css$/,
+        test: /\.module\.css$/, // CSS Modules
+        use: [
+          MiniCssExtractPlugin.loader,
+          {
+            loader: 'css-loader',
+            options: {
+              modules: true,
+            },
+          },
+        ],
+      },
+      {
+        test: /\.css$/, // CSS global
+        exclude: /\.module\.css$/,
         use: [MiniCssExtractPlugin.loader, 'css-loader'],
       },
       {
-        test: /\.(sa|sc)ss$/,
+        test: /\.module\.(sa|sc)ss$/, // SCSS Modules
+        use: [
+          MiniCssExtractPlugin.loader,
+          {
+            loader: 'css-loader',
+            options: {
+              modules: true,
+            },
+          },
+          'sass-loader',
+        ],
+      },
+      {
+        test: /\.(sa|sc)ss$/, // SCSS global
+        exclude: /\.module\.(sa|sc)ss$/,
         use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
       },
       {

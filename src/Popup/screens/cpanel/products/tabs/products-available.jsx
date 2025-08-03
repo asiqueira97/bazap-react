@@ -3,6 +3,7 @@ import Search from '../../../../components/search/search';
 import ProductCard from '../../components/product-card/product-card';
 import { generateProducsAvailable } from '../../../../utils/utils';
 import { useAppStore } from '../../../../../store/useAppStore';
+import "./styles.scss";
 
 const removerAcentos = (text) => {
   return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -40,7 +41,7 @@ function ProductsAvailable() {
       <div>
         <div className="flex-row justify-between align-center" style={{ margin: '15px 0px' }}>
           <h3>Disponíveis ({productList.length})</h3>
-          <button className="download-button" onClick={handleClickDownload}>
+          <button className="download-button-rel-products" onClick={handleClickDownload}>
             Baixar
           </button>
         </div>

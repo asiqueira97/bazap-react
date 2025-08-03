@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import logo from '../../../assets/icon.png';
 import Alerts from '../../components/alerts/alerts';
 import { useAppStore } from '../../../store/useAppStore';
 import { getWeekdayIfWithin7Days, formatDateWithRelativeDay, subtractOneDay, filtrarPorData } from '../../utils/date';
@@ -27,12 +26,8 @@ const Filter = () => {
 
   const [loadingSearch, setLoadingSearch] = useState(false);
 
-  const [searchType, setSearchType] = useState('date');
-
   const today = new Date().toISOString().split('T')[0];
   const [date, setDate] = useState('');
-
-  const [weekday, setWeekday] = useState(initialValue);
 
   useEffect(() => {
     const inverterFormato = (dataBR) => {
@@ -74,6 +69,8 @@ const Filter = () => {
       setMentionedProducts(mentionedProductsFiltered)
       setBuyersPerProduct(defineBuyersPerProduct(mentionedProductsFiltered))
 
+      console.log('mentionedProductsFiltered', mentionedProductsFiltered)
+
       const publishedProductsFiltered = filtrarPorData(publishedProducts, targetDate);
       setPublishedProducts(publishedProductsFiltered)
 
@@ -87,11 +84,6 @@ const Filter = () => {
 
   const handleSearch = () => {
     setLoadingSearch(true);
-
-    if (searchType !== 'date') {
-      console.log('BUSCAR POR DIA DA SEMANA (últimos 7 dias)');
-      return;
-    }
 
     const formattedDate = date.split('-').reverse().join('/');
     const relativeLabel = formatDateWithRelativeDay(formattedDate);
@@ -110,59 +102,21 @@ const Filter = () => {
   };
 
   const disabledButton = (
-    date.trim().length === 0 &&
-    weekday.trim().length === 0
+    date.trim().length === 0
   ) || loadingSearch
 
   return (
     <div className="Bazap_initial-form">
       <div>
-        <label htmlFor="searchType">Tipo de busca</label>
-        <select
-          id="searchType"
-          value={searchType}
-          onChange={(e) => {
-            setLoadingSearch(false)
-            setSearchType(e.target.value)
-            setDate('')
-            setWeekday('')
-          }}
-        >
-          <option value="date">Buscar por data</option>
-          <option value="diaSemana">Buscar por dia da semana</option>
-        </select>
+        <label htmlFor="date">Escolha a data</label>
+        <input
+          type="date"
+          id="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          max={today}
+        />
       </div>
-
-      {searchType === 'date' ? (
-        <div>
-          <label htmlFor="date">Escolha a data</label>
-          <input
-            type="date"
-            id="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            max={today}
-          />
-        </div>
-      ) : (
-        <div>
-          <label htmlFor="weekday">Escolha o dia da semana</label>
-          <select
-            id="weekday"
-            value={weekday}
-            onChange={(e) => setWeekday(e.target.value)}
-          >
-            <option value="">Selecione...</option>
-            <option value="SEGUNDA-FEIRA">Segunda-feira</option>
-            <option value="TERÇA-FEIRA">Terça-feira</option>
-            <option value="QUARTA-FEIRA">Quarta-feira</option>
-            <option value="QUINTA-FEIRA">Quinta-feira</option>
-            <option value="SEXTA-FEIRA">Sexta-feira</option>
-            <option value="SÁBADO">Sábado</option>
-            <option value="DOMINGO">Domingo</option>
-          </select>
-        </div>
-      )}
 
       <div className="action-button">
         <button disabled={disabledButton} onClick={handleSearch}>
@@ -178,12 +132,13 @@ const Filter = () => {
 };
 
 const Initial = () => {
+  const { groupImage } = useAppStore()
   return (
     <div className="Bazap_initial">
       <Alerts />
       <div className="Bazap_initial-form__content">
         <div className="Bazap_initial-form__logo">
-          <img src={logo} width={70} />
+          <img src={groupImage || ''} width={70} />
         </div>
         <Filter />
       </div>

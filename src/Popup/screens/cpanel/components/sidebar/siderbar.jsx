@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import logo from '../../../../../assets/icon.png';
+import React from 'react';
 import { IoIosPeople } from 'react-icons/io';
 import { GiClothes } from 'react-icons/gi';
 import { BiError } from "react-icons/bi";
@@ -9,12 +8,12 @@ import { useAppStore } from '../../../../../store/useAppStore';
 import style from './style.scss';
 
 function Siderbar() {
-  const { cpanelCurrentView, setCpanelCurrentView, currentGroup } = useAppStore()
+  const { cpanelCurrentView, setCpanelCurrentView, currentGroup, groupImage } = useAppStore()
 
   return (
     <div className="Dashboard__sidebar">
       <header>
-        <img src={logo} />
+        <img src={groupImage} />
         <p>{currentGroup.toUpperCase()}</p>
       </header>
 

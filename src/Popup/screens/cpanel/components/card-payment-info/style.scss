@@ -3,6 +3,11 @@
   padding: 10px;
   justify-content: space-evenly;
 
+  img {
+    border-radius: 50%;
+    border: 1px solid #ececec;
+  }
+
   div {
     display: flex;
     flex-direction: column;

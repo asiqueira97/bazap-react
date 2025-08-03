@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react'
 import { IoAlertCircleOutline } from "react-icons/io5";
 import { useAppStore } from '../../../../store/useAppStore';
 import styles from './styles.scss'
+import { normalizeLettersOnly } from '../../../utils/utils';
 
 const CryptoJS = require('crypto-js');
 
@@ -77,7 +78,7 @@ function UntrackedIntentions() {
                 <div key={contact} className="client-group">
                     <div className="client-name">{msgs[0]?.contact.trim().toUpperCase() || 'Desconhecido'}</div>
                     {msgs.map((msg, index) => (
-                        <div key={index} className={`message-card ${getCategory(msg.interest)}`}>
+                        <div key={index} className={`message-card ${getCategory(normalizeLettersOnly(msg.interest)) || 'unknown'}`}>
                             <span className="keyword">{msg.interest}</span>
                             <span className="time">{msg.time}</span>
                         </div>

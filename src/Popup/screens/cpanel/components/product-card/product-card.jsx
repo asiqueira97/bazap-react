@@ -9,7 +9,7 @@ function ProductCard({ product, elementRef }) {
       <img src={product.image} width="60" />
       <p>{product.product}</p>
 
-      {product.media ? <div className={`flag flag-${product.media}`}>{product.media}</div> : <></>}
+      {/* {product.media ? <div className={`flag flag-${product.media}`}>{product.media}</div> : <></>} */}
     </div>
   );
 }

@@ -11,26 +11,109 @@ import { WA_CLASS_MAP } from './utils/class-map';
 
 const CryptoJS = require('crypto-js');
 
-const settings = { timeScrollUp: 1 };
+const settings = { timeScrollUp: 100 };
 
 function scrollToUp(divMessagesContainer, dates) {
+  return new Promise(async (resolve) => {
 
-  const { primaryDate, previousDate } = dates
+    const { primaryDate } = dates
 
-  const primaryDateSplit = primaryDate.split('|')
+    const primaryDateSplit = primaryDate.split('|')
+
+    const targetDate = primaryDateSplit[0] || primaryDateSplit[1];
+    const scrollStep = -400;
+    const delay = settings.timeScrollUp;
+
+    if (!divMessagesContainer) {
+      resolve(false);
+      return;
+    }
+
+    const getAllMessages = () => Array.from(document.querySelectorAll('div[data-pre-plain-text]'));
+
+    const extractDate = el => {
+      const match = el.dataset.prePlainText?.match(/\[\d{2}:\d{2}, (\d{2}\/\d{2}\/\d{4})\]/);
+      return match ? match[1] : null;
+    };
+
+    console.log(`🚀 Iniciando scroll até encontrar mensagens da data: ${targetDate}...`);
+
+    let found = false;
+    let reachedPast = false;
+    let scrolls = 0;
+
+    const scrollAndSearch = async () => {
+      while (!reachedPast) {
+
+        divMessagesContainer.scrollBy(0, scrollStep);
+
+        const btnClickMore = document.querySelector('button.x14m1o6m.x126m2zf')
+        if (btnClickMore) btnClickMore.click()
+
+        await new Promise(r => setTimeout(r, delay));
+
+        const allMsgs = getAllMessages();
+        const dates = allMsgs.map(extractDate).filter(Boolean);
+        const hasTarget = dates.includes(targetDate);
+        const hasBeforeTarget = dates.some(date => {
+          const [d, m, y] = date.split('/').map(Number);
+          const [td, tm, ty] = targetDate.split('/').map(Number);
+          const current = new Date(y, m - 1, d);
+          const target = new Date(ty, tm - 1, td);
+          return current < target;
+        });
+
+        if (hasTarget) {
+          found = true;
+        }
+
+        if (found && hasBeforeTarget) {
+          reachedPast = true;
+        }
+
+        scrolls++;
+      }
+
+      const filtered = getAllMessages().filter(el => extractDate(el) === targetDate);
+
+      if (filtered.length === 0) {
+        console.warn(`⚠️ Nenhuma mensagem da data ${targetDate} encontrada.`);
+        resolve(false);
+        return;
+      }
+
+      console.log(`✅ Fim da busca. Total de mensagens da data ${targetDate}: ${filtered.length}`);
+      filtered.forEach(msg => {
+        console.log(`${msg.dataset.prePlainText} ${msg.innerText}`);
+      });
+
+      resolve(true);
+    };
+
+    await scrollAndSearch();
+  })
+}
+
+function scrollToUpOld(divMessagesContainer, dates) {
+
+  const { previousDate } = dates
   const previousDateSplit = previousDate.split('|')
+
+  const btnClickMore = document.querySelector('button.x14m1o6m.x126m2zf')
+
+  if (btnClickMore) {
+    console.log('CLICAR AQUI')
+    btnClickMore.click()
+  }
 
   divMessagesContainer.scrollTop = 0;
 
   let days = [];
   const findDays = document.querySelectorAll(WA_CLASS_MAP.CHAT_DATE_LABEL_CLASS);
 
-  findDays.forEach((day) => days.push(day.innerText.toUpperCase()));
+  console.log('findDays', findDays)
 
-  const checkIncludePrimaryDate =
-    primaryDateSplit.length === 1
-      ? days.includes(primaryDateSplit[0])
-      : days.includes(primaryDateSplit[0]) || days.includes(primaryDateSplit[1]);
+  findDays.forEach((day) => days.push(day.innerText.toUpperCase()));
 
   const checkIncludePreviousDate =
     previousDateSplit.length === 1
@@ -144,6 +227,7 @@ function getMentionedMessages() {
         const productId = CryptoJS.MD5(product.toLowerCase().replace(/\s+/g, '-')).toString();
         const price = getPrice(product);
 
+
         if (price > 0) {
           const messageMentioned = {
             product,
@@ -168,6 +252,26 @@ function init(params, sendResponse) {
   const divMessagesContainer = document.querySelector(WA_CLASS_MAP.CHAT_SCROLL_CONTAINER);
 
   if (hasElementScroll(divMessagesContainer)) {
+    scrollToUp(divMessagesContainer, params.dates)
+      .then(endScroll => {
+        if (endScroll) {
+          setTimeout(() => {
+            const domInfo = {
+              mentionedProducts: getMentionedMessages(),
+              publishedProducts: getPublishedProducts(),
+              lostMessages: getLostMessages()
+            }
+
+            console.log('PARAMS', params)
+            console.log('domInfo', domInfo)
+
+            sendResponse({ domInfo });
+          }, 1000);
+        } else {
+          console.log('❌ Data não encontrada no histórico.');
+        }
+      });
+    /*
     const toUp = setInterval(function () {
       const find = scrollToUp(divMessagesContainer, params.dates);
       if (find) {
@@ -184,6 +288,7 @@ function init(params, sendResponse) {
         }, 1000);
       }
     }, settings.timeScrollUp);
+    */
   } else {
     console.log('NENHUMA MENSAGEM ENCONTRADA')
   }
@@ -209,7 +314,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   switch (request.action) {
     case 'checkGroup': {
       whatsappGroupsAutoClick()
-      const groupNameElement = document.querySelector('#main > header .x1iyjqo2.x6ikm8r');
+      const headerChat = document.querySelector('#main > header');
+      const groupNameElement = headerChat.querySelector('.x1iyjqo2.x6ikm8r');
       const numberStorage = localStorage?.getItem('last-wid-md');
 
       if (!groupNameElement || !numberStorage) {
@@ -217,13 +323,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return;
       }
 
+      const groupImage = headerChat.querySelector('img').src;
       const groupName = groupNameElement.innerText.toLowerCase();
       const match = numberStorage.match(/"(\d+):/);
       const numberLogged = match ? match[1] : null;
 
       setTimeout(() => {
         const chats = getWhatsAppGroups()
-        sendResponse({ validGroup: true, session: { numberLogged, groupName, chats } });
+        sendResponse({ validGroup: true, session: { numberLogged, groupName, groupImage, chats } });
       }, 1000)
       return true;
     }

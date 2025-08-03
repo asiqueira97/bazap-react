@@ -125,14 +125,13 @@ export default function ProductsSold() {
                   const contact = client?.contact.toUpperCase() || 'Desconhecido'
                   const keyword = detectKeyword(client.interest);
                   const color = keyword ? interestColors[keyword] : "#ccc";
-                  const label = keyword ? interestLabels[keyword] : client.interest;
                   const icon = contact === owner ? "✅" : keyword ? interestIcons[keyword] : ''
 
                   return (
                     <div className="timeline-item" key={idx}>
                       <div className="timeline-dot" style={{ backgroundColor: color }}></div>
                       <div className="timeline-content">
-                        <span style={{ fontWeight: "bold" }}>{contact}</span> — {label} {icon}
+                        <span style={{ fontWeight: "bold" }}>{contact}</span> — {client.interest} {icon}
                         <div className="timestamp">{client.time}</div>
                       </div>
                     </div>

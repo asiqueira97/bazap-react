@@ -5,7 +5,7 @@ export function defineBuyersPerProduct(mensagens) { // Definir os compradores pa
     const agrupados = {};
 
     mensagens.forEach(msg => {
-        const { productId, product, contact, number, interest, productImage, time, price } = msg;
+        const { productId, product, contact, number, name, interest, productImage, time, price } = msg;
 
         if (!agrupados[productId]) {
             agrupados[productId] = {
@@ -18,7 +18,7 @@ export function defineBuyersPerProduct(mensagens) { // Definir os compradores pa
         }
 
         agrupados[productId].mensagens.push({
-            contact: contact || number,
+            contact: contact || number || name,
             interest,
             time
         });
@@ -41,8 +41,13 @@ export function defineBuyersPerProduct(mensagens) { // Definir os compradores pa
 
         produto.levou = null;
         for (const [contact, interacoes] of Object.entries(interessados)) {
-            const temQueroOuFila = palavrasChaveInteresse.some(palavra => interacoes.includes(palavra));
-            const temDesisto = palavrasChaveDesistencia.some(palavra => interacoes.includes(palavra));
+            const temQueroOuFila = palavrasChaveInteresse.some(palavra =>
+                interacoes.some(frase => frase.toLowerCase().includes(palavra))
+            );
+
+            const temDesisto = palavrasChaveDesistencia.some(palavra =>
+                interacoes.some(frase => frase.toLowerCase().includes(palavra))
+            );
 
             if (temQueroOuFila && !temDesisto) {
                 produto.levou = contact;

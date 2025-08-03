@@ -1,9 +1,8 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import Popup from './popup.jsx';
-import style from './styles.scss';
+import Popup from './popup';
 
-const root = createRoot(document.getElementById('react-app'));
+const root = createRoot(document.getElementById('react-app')!);
 
 function App() {
   return (
