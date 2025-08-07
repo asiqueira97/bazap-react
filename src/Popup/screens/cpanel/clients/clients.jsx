@@ -1,7 +1,7 @@
 import React, { useState, createRef } from 'react';
 import Search from '../../../components/search/search';
 import ProductCardClient from '../components/product-card-client/product-card-client';
-import { generateReportImages, generateReportPdf, removerAcentos } from '../../../utils/utils';
+import { generateReportImages, removerAcentos } from '../../../utils/utils';
 import { useAppStore } from '../../../../store/useAppStore';
 import Modal from '../../../components/modal/Modal';
 import style from './style.scss';
@@ -45,6 +45,8 @@ function Clients() {
     .fill()
     .map((_, i) => createRef());
 
+  console.log('montados => ', elRefs?.length)
+
   const handleClickModal = () => setModalOpen(true)
 
   return (
@@ -58,6 +60,9 @@ function Clients() {
         </div>
 
         <div className="Dashboard__Clients-content">
+          <div className="flex-row justify-between align-center" style={{ margin: '15px 0px' }}>
+            <h3>Clientes ({productList.length})</h3>
+          </div>
           <Search
             placeholder={'Buscar cliente'}
             onChange={handleSearch}
@@ -89,14 +94,6 @@ function Clients() {
 
         <div className="flex-row justify-around align-center">
           <div className="flex-row" style={{ gap: 10 }}>
-            <button
-              className="download-button"
-              onClick={() => generateReportPdf(elRefs)}
-              data-name="pdf"
-            >
-              PDF
-            </button>
-
             <button
               className="download-button"
               onClick={() => generateReportImages(productList, elRefs)}

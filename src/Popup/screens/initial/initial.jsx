@@ -8,7 +8,6 @@ import { getOptionsSelectInitialFilter } from '../../utils/utils';
 import style from './style.scss';
 
 const Filter = () => {
-  const postDayOfWeek = 'QUARTA-FEIRA'
 
   const {
     setMentionedProducts,
@@ -20,9 +19,6 @@ const Filter = () => {
     setDateSearched,
     setLostMessages
   } = useAppStore()
-
-  const options = getOptionsSelectInitialFilter(postDayOfWeek);
-  const initialValue = options.find((opt) => opt.value === opt.selected)?.value || 'ONTEM';
 
   const [loadingSearch, setLoadingSearch] = useState(false);
 
@@ -69,8 +65,6 @@ const Filter = () => {
       setMentionedProducts(mentionedProductsFiltered)
       setBuyersPerProduct(defineBuyersPerProduct(mentionedProductsFiltered))
 
-      console.log('mentionedProductsFiltered', mentionedProductsFiltered)
-
       const publishedProductsFiltered = filtrarPorData(publishedProducts, targetDate);
       setPublishedProducts(publishedProductsFiltered)
 
@@ -85,20 +79,25 @@ const Filter = () => {
   const handleSearch = () => {
     setLoadingSearch(true);
 
-    const formattedDate = date.split('-').reverse().join('/');
-    const relativeLabel = formatDateWithRelativeDay(formattedDate);
-    const isRecent = ['HOJE', 'ONTEM'].includes(relativeLabel.split('|')[1]);
+    chrome.storage.local.get(['config'], (result) => {
+      const keywords = result?.config?.keywords;
 
-    const baseDate = isRecent ? formattedDate : getWeekdayIfWithin7Days(formattedDate);
+      const formattedDate = date.split('-').reverse().join('/');
+      const relativeLabel = formatDateWithRelativeDay(formattedDate);
+      const isRecent = ['HOJE', 'ONTEM'].includes(relativeLabel.split('|')[1]);
 
-    const params = {
-      dates: {
-        primaryDate: formatDateWithRelativeDay(baseDate.split('|')[0]),
-        previousDate: formatDateWithRelativeDay(subtractOneDay(baseDate.split('|')[0])),
-      }
-    };
+      const baseDate = isRecent ? formattedDate : getWeekdayIfWithin7Days(formattedDate);
 
-    search(params)
+      const params = {
+        dates: {
+          primaryDate: formatDateWithRelativeDay(baseDate.split('|')[0]),
+          previousDate: formatDateWithRelativeDay(subtractOneDay(baseDate.split('|')[0])),
+        },
+        keywords
+      };
+
+      search(params)
+    });
   };
 
   const disabledButton = (

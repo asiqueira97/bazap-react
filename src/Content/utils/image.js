@@ -15,21 +15,26 @@ export function extractPublishedProductImage(images) {
 }
 
 export function extractMentionedProductImage(element) {
-    const divs = element.querySelectorAll('div[style*="background-image"]');
 
-    let imageUrl = null;
+    function getImagesBg(el, type) {
+        if (!el) return null;
 
-    if (divs[1] && divs[1].style.backgroundImage) {
-        // Pega a URL do segundo div com background-image
-        imageUrl = divs[1].style.backgroundImage;
-    } else if (divs[0] && divs[0].style.backgroundImage) {
-        // Fallback para o primeiro
-        imageUrl = divs[0].style.backgroundImage;
+        let image = null;
+        const divs = el.querySelectorAll('div[style*="background-image"]');
+
+        if (divs[1] && divs[1].style.backgroundImage) {
+            image = divs[1].style.backgroundImage;
+        } else if (divs[0] && divs[0].style.backgroundImage) {
+            image = divs[0].style.backgroundImage;
+        }
+
+        return image
     }
 
-    // Remove 'url("...")' da string e deixa só a URL limpa
+    let imageUrl = getImagesBg(element, 'def') || getImagesBg(element?.querySelector('._agtn'), 'gnt')
+
     if (imageUrl) {
-        imageUrl = imageUrl.slice(5, -2); // remove url(" e ")
+        imageUrl = imageUrl.slice(5, -2);
     }
 
     return imageUrl;

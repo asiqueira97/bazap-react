@@ -11,7 +11,7 @@ import { WA_CLASS_MAP } from './utils/class-map';
 
 const CryptoJS = require('crypto-js');
 
-const settings = { timeScrollUp: 100 };
+const settings = { timeScrollUp: 500 };
 
 function scrollToUp(divMessagesContainer, dates) {
   return new Promise(async (resolve) => {
@@ -35,8 +35,6 @@ function scrollToUp(divMessagesContainer, dates) {
       const match = el.dataset.prePlainText?.match(/\[\d{2}:\d{2}, (\d{2}\/\d{2}\/\d{4})\]/);
       return match ? match[1] : null;
     };
-
-    console.log(`🚀 Iniciando scroll até encontrar mensagens da data: ${targetDate}...`);
 
     let found = false;
     let reachedPast = false;
@@ -82,45 +80,11 @@ function scrollToUp(divMessagesContainer, dates) {
         return;
       }
 
-      console.log(`✅ Fim da busca. Total de mensagens da data ${targetDate}: ${filtered.length}`);
-      filtered.forEach(msg => {
-        console.log(`${msg.dataset.prePlainText} ${msg.innerText}`);
-      });
-
       resolve(true);
     };
 
     await scrollAndSearch();
   })
-}
-
-function scrollToUpOld(divMessagesContainer, dates) {
-
-  const { previousDate } = dates
-  const previousDateSplit = previousDate.split('|')
-
-  const btnClickMore = document.querySelector('button.x14m1o6m.x126m2zf')
-
-  if (btnClickMore) {
-    console.log('CLICAR AQUI')
-    btnClickMore.click()
-  }
-
-  divMessagesContainer.scrollTop = 0;
-
-  let days = [];
-  const findDays = document.querySelectorAll(WA_CLASS_MAP.CHAT_DATE_LABEL_CLASS);
-
-  console.log('findDays', findDays)
-
-  findDays.forEach((day) => days.push(day.innerText.toUpperCase()));
-
-  const checkIncludePreviousDate =
-    previousDateSplit.length === 1
-      ? days.includes(previousDateSplit[0])
-      : days.includes(previousDateSplit[0]) || days.includes(previousDateSplit[1]);
-
-  return checkIncludePreviousDate || document.querySelectorAll('span[data-icon="lock-small"]').length == 1;
 }
 
 function hasElementScroll(element) {
@@ -184,13 +148,12 @@ function getLostMessages() {
         const extractedInfo = extrairInfo(messageInfoBody?.getAttribute('data-pre-plain-text'));
 
         if (!productImage) {
+
           const messageMentioned = {
             contact,
             interest,
             ...extractedInfo,
           };
-
-          console.log(messageMentioned)
 
           lostMessages.push(messageMentioned);
         }
@@ -202,8 +165,11 @@ function getLostMessages() {
   return lostMessages;
 }
 
-function getMentionedMessages() {
+function getMentionedMessages(keywordsConfigured) {
   const quotedMessages = [];
+  const keywords = Object.values(keywordsConfigured).flat();
+
+  console.log('buscar por', keywords);
 
   document.querySelectorAll('.message-in, .message-out').forEach((msg) => {
     const citacaoEl = msg.querySelector('[aria-label="Mensagem citada"]');
@@ -218,7 +184,7 @@ function getMentionedMessages() {
           .querySelector('._ao3e.selectable-text.copyable-text')
           ?.innerText?.toLowerCase() || 'Uknnow';
 
-      if (['quero', 'qr', 'fila', 'desisto', 'qro'].some((key) => interest.toLowerCase().includes(key))) {
+      if (keywords.some((key) => interest.toLowerCase().includes(key))) {
         const contact = extrairNomeENumero(sectionIdentification);
         const productImage = extractMentionedProductImage(citacaoEl);
         const extractedInfo = extrairInfo(messageInfoBody?.getAttribute('data-pre-plain-text'));
@@ -226,7 +192,6 @@ function getMentionedMessages() {
         const product = citacaoEl.querySelector('.quoted-mention._ao3e').innerText;
         const productId = CryptoJS.MD5(product.toLowerCase().replace(/\s+/g, '-')).toString();
         const price = getPrice(product);
-
 
         if (price > 0) {
           const messageMentioned = {
@@ -249,21 +214,20 @@ function getMentionedMessages() {
 }
 
 function init(params, sendResponse) {
+  const { dates, keywords } = params
+
   const divMessagesContainer = document.querySelector(WA_CLASS_MAP.CHAT_SCROLL_CONTAINER);
 
   if (hasElementScroll(divMessagesContainer)) {
-    scrollToUp(divMessagesContainer, params.dates)
+    scrollToUp(divMessagesContainer, dates)
       .then(endScroll => {
         if (endScroll) {
           setTimeout(() => {
             const domInfo = {
-              mentionedProducts: getMentionedMessages(),
+              mentionedProducts: getMentionedMessages(keywords),
               publishedProducts: getPublishedProducts(),
               lostMessages: getLostMessages()
             }
-
-            console.log('PARAMS', params)
-            console.log('domInfo', domInfo)
 
             sendResponse({ domInfo });
           }, 1000);
@@ -271,24 +235,6 @@ function init(params, sendResponse) {
           console.log('❌ Data não encontrada no histórico.');
         }
       });
-    /*
-    const toUp = setInterval(function () {
-      const find = scrollToUp(divMessagesContainer, params.dates);
-      if (find) {
-        clearInterval(toUp);
-
-        setTimeout(() => {
-          const domInfo = {
-            mentionedProducts: getMentionedMessages(),
-            publishedProducts: getPublishedProducts(),
-            lostMessages: getLostMessages()
-          }
-
-          sendResponse({ domInfo });
-        }, 1000);
-      }
-    }, settings.timeScrollUp);
-    */
   } else {
     console.log('NENHUMA MENSAGEM ENCONTRADA')
   }
@@ -352,9 +298,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 
     case 'search': {
-      const { dates, times } = request;
-      init({ dates, times }, sendResponse);
-      return true; // canal aberto para resposta assíncrona
+      const { dates, keywords } = request;
+      init({ dates, keywords }, sendResponse);
+      return true;
     }
 
     default:

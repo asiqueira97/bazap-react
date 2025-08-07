@@ -31,9 +31,6 @@ const Popup = () => {
   React.useEffect(() => {
     const getAllowedGroups = () => {
       chrome.storage.local.get(['config'], (result) => {
-
-        console.log(result)
-
         const allowedGroupsRaw = result?.config?.salesGroups;
 
         if (allowedGroupsRaw) {

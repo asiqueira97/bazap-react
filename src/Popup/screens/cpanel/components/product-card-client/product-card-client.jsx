@@ -12,8 +12,6 @@ function ProductCardClient({ productList, index, elementRef }) {
     return count + total.price;
   }, 0.0);
 
-  const profileImage = products[0].imageProfile;
-
   return (
     <div className="ProductCardClient" ref={elementRef}>
       <div className="infoClient">
