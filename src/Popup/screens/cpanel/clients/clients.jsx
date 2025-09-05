@@ -45,8 +45,6 @@ function Clients() {
     .fill()
     .map((_, i) => createRef());
 
-  console.log('montados => ', elRefs?.length)
-
   const handleClickModal = () => setModalOpen(true)
 
   return (
@@ -83,12 +81,11 @@ function Clients() {
       </div>
 
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
-        <p className="title">Escolha a forma de download</p>
+        <p className="title">Relatório de vendas</p>
 
         <div className="info-download">
           <ul>
-            <li>PDF: Arquivo pdf completo com todas as vendas separado por cliente.</li>
-            <li>Imagens: Arquivo zip com imagens de venda por cliente.</li>
+            <li>Imagens de venda por cliente.</li>
           </ul>
         </div>
 
@@ -99,7 +96,7 @@ function Clients() {
               onClick={() => generateReportImages(productList, elRefs)}
               data-name="images"
             >
-              IMAGENS
+              Baixar
             </button>
           </div>
         </div>

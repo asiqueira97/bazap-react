@@ -17,7 +17,8 @@ const Filter = () => {
     setPublishedProducts,
     setBuyersPerProduct,
     setDateSearched,
-    setLostMessages
+    setLostMessages,
+    setKeywords
   } = useAppStore()
 
   const [loadingSearch, setLoadingSearch] = useState(false);
@@ -63,7 +64,7 @@ const Filter = () => {
 
       const mentionedProductsFiltered = filtrarPorData(mentionedProducts, targetDate);
       setMentionedProducts(mentionedProductsFiltered)
-      setBuyersPerProduct(defineBuyersPerProduct(mentionedProductsFiltered))
+      setBuyersPerProduct(defineBuyersPerProduct(mentionedProductsFiltered, params.keywords))
 
       const publishedProductsFiltered = filtrarPorData(publishedProducts, targetDate);
       setPublishedProducts(publishedProductsFiltered)
@@ -96,6 +97,7 @@ const Filter = () => {
         keywords
       };
 
+      setKeywords(keywords)
       search(params)
     });
   };

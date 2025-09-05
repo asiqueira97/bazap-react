@@ -5,6 +5,12 @@ type Message = any;
 type Product = any;
 type Group = any;
 
+type Keywords = {
+  desist: string[];
+  interest: string[];
+  wait: string[];
+} | null;
+
 export type ViewType = 'loading' | 'dashboard' | 'alert' | string;
 
 interface AppStore {
@@ -22,6 +28,7 @@ interface AppStore {
   buyersPerProduct: Record<string, any[]>; // ex: { "produtoA": ["cliente1", "cliente2"] }
   lostMessages: Message[];
   groups: Group[];
+  keywords: Keywords;
 
   setCurrentView: (view: ViewType) => void;
   setCurrentGroup: (grp: string) => void;
@@ -29,6 +36,7 @@ interface AppStore {
   setDateSearched: (date: string | null) => void;
   setAllowedGroup: (group: Group | null) => void;
   setAlertMessage: (msg: string) => void;
+  setKeywords: (keywords: Keywords) => void;
   setAvailableGroups: (groups: Group[]) => void;
 
   setGroups: (grps: Group[]) => void;
@@ -56,6 +64,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   buyersPerProduct: {},
   lostMessages: [],
   groups: [],
+  keywords: null,
 
   setCurrentView: (view) => set({ currentView: view }),
   setGroupImage: (grp) => set({ groupImage: grp }),
@@ -65,6 +74,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   setAllowedGroup: (group) => set({ allowedGroup: group }),
   setAlertMessage: (msg) => set({ alertMessage: msg }),
   setAvailableGroups: (groups) => set({ availableGroups: groups }),
+  setKeywords: (keywords) => set({ keywords: keywords }),
 
   setGroups: (grps) => set({ groups: grps }),
   setMentionedProducts: (msgs) => set({ mentionedProducts: msgs }),

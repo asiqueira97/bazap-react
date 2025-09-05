@@ -1,3 +1,6 @@
+import { processAndSaveSingleImage } from "../Content/utils/imageProcessor";
+import { clearDatabase } from "../database/db";
+
 function enviarParaAbaWhatsapp(action, payload = {}, callback) {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tab = tabs[0];
@@ -12,7 +15,6 @@ function enviarParaAbaWhatsapp(action, payload = {}, callback) {
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-
   // INICIAR CONFIGURACOES
   if (request.action === 'init-setup') {
     enviarParaAbaWhatsapp('getListGroups', {}, (response) => {
@@ -52,6 +54,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   // MANDAR O SEARCH
   if (request.action === 'search') {
+
+    clearDatabase();
+
     enviarParaAbaWhatsapp('search', request.params, (res) => {
       if (res?.domInfo) {
         sendResponse({ ok: true, result: res.domInfo });
@@ -61,5 +66,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
 
     return true
+  }
+
+  if (request.action === "process_single_image") {
+    const { url, productId, mentionId } = request;
+    processAndSaveSingleImage(url, productId, mentionId);
+    sendResponse({ status: "done" });
+    return true; // Retorna true para manter a porta de mensagem aberta para a resposta assíncrona
   }
 });

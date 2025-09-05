@@ -1,9 +1,3 @@
-/*
-Dada uma data, eu quero saber se ela está dentro de 7 dias. 
-Exemplo: Hoje é dia 27/05/2025, seu passar a data 21/05/2025, precisa me devolver "quarta-feira".
-Pois do dia 21 ate o dia 27 tem 7 dias, entao quero o nome do dia da semana. Se passar de 7 dias, quero apenas a data mesmo.
-*/
-
 export function getWeekdayIfWithin7Days(dateStr) {
     const [day, month, year] = dateStr.split('/').map(Number);
     const inputDate = new Date(year, month - 1, day);
@@ -24,7 +18,6 @@ export function getWeekdayIfWithin7Days(dateStr) {
     return dateStr;
 }
 
-// old
 export function getTime(str) {
     const regex = /\[(\d{2}:\d{2}), (\d{2}\/\d{2}\/\d{4})\]/;
     const match = str.match(regex);

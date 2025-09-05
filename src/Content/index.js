@@ -11,9 +11,9 @@ import { WA_CLASS_MAP } from './utils/class-map';
 
 const CryptoJS = require('crypto-js');
 
-const settings = { timeScrollUp: 500 };
+const settings = { timeScrollUp: 200 };
 
-function scrollToUp(divMessagesContainer, dates) {
+function scrollToUp(divMessagesContainer, dates, keywords) {
   return new Promise(async (resolve) => {
 
     const { primaryDate } = dates
@@ -40,10 +40,39 @@ function scrollToUp(divMessagesContainer, dates) {
     let reachedPast = false;
     let scrolls = 0;
 
+    const mensagensMencionadas = new Map();
+    const mensagensPublicadas = new Map();
+    const mensagensPerdidas = new Map();
+
     const scrollAndSearch = async () => {
+
       while (!reachedPast) {
 
         divMessagesContainer.scrollBy(0, scrollStep);
+
+        // Menções
+        const messagesMent = getMentionedMessages(keywords)
+        messagesMent.forEach(msg => {
+          if (!mensagensMencionadas.has(msg.mentionId)) {
+            mensagensMencionadas.set(msg.mentionId, msg);
+          }
+        });
+
+        // Produtos publicados (vendedor)
+        const messagesPublish = getPublishedProducts()
+        messagesPublish.forEach(msg => {
+          if (!mensagensPublicadas.has(msg.productId)) {
+            mensagensPublicadas.set(msg.productId, msg);
+          }
+        });
+
+        // Gerenciar erros
+        const messagesLost = getLostMessages(keywords)
+        messagesLost.forEach(msg => {
+          if (!mensagensPerdidas.has(msg.messageId)) {
+            mensagensPerdidas.set(msg.messageId, msg);
+          }
+        });
 
         const btnClickMore = document.querySelector('button.x14m1o6m.x126m2zf')
         if (btnClickMore) btnClickMore.click()
@@ -61,11 +90,13 @@ function scrollToUp(divMessagesContainer, dates) {
           return current < target;
         });
 
+        const findIconLockInitialChat = document.querySelector('div[role="button"] span[data-icon="lock-small"]')
+
         if (hasTarget) {
           found = true;
         }
 
-        if (found && hasBeforeTarget) {
+        if ((found && hasBeforeTarget) || findIconLockInitialChat) {
           reachedPast = true;
         }
 
@@ -80,7 +111,16 @@ function scrollToUp(divMessagesContainer, dates) {
         return;
       }
 
-      resolve(true);
+      const mensagensUnicas = Array.from(mensagensMencionadas.values());
+      const produtosUnicos = Array.from(mensagensPublicadas.values());
+      const mensagensPerdidasUnicas = Array.from(mensagensPerdidas.values());
+
+      resolve({
+        success: true,
+        mentionedProducts: mensagensUnicas,
+        publishedProducts: produtosUnicos,
+        lostMessages: mensagensPerdidasUnicas
+      });
     };
 
     await scrollAndSearch();
@@ -113,6 +153,14 @@ function getPublishedProducts() {
 
     if (!price || price === 0) return;
 
+    if (image) {
+      chrome.runtime.sendMessage({
+        action: "process_single_image",
+        url: image,
+        productId: productId
+      })
+    }
+
     products.push({
       ...infoMessage,
       price,
@@ -126,8 +174,10 @@ function getPublishedProducts() {
   return products
 }
 
-function getLostMessages() {
+function getLostMessages(keywordsConfigured) {
   const lostMessages = [];
+
+  const keywords = Object.values(keywordsConfigured).flat();
 
   document.querySelectorAll('.message-in, .message-out').forEach((msg) => {
     const citacaoEl = msg.querySelector('[aria-label="Mensagem citada"]');
@@ -142,22 +192,24 @@ function getLostMessages() {
           .querySelector('._ao3e.selectable-text.copyable-text')
           ?.innerText?.toLowerCase() || 'Uknnow';
 
-      if (['quero', 'qr', 'fila', 'desisto', 'qro'].some((key) => interest.toLowerCase().includes(key))) {
+      if (keywords.some((key) => interest.toLowerCase().includes(key))) {
         const contact = extrairNomeENumero(sectionIdentification);
-        const productImage = extractMentionedProductImage(citacaoEl);
         const extractedInfo = extrairInfo(messageInfoBody?.getAttribute('data-pre-plain-text'));
+        const messageId = CryptoJS.MD5(`${interest}-${extractedInfo.time}`).toString();
 
-        if (!productImage) {
+        const product = citacaoEl.querySelector('.quoted-mention._ao3e').innerText;
+        const price = getPrice(product);
 
+        if (!price) {
           const messageMentioned = {
             contact,
             interest,
+            messageId,
             ...extractedInfo,
           };
 
           lostMessages.push(messageMentioned);
         }
-
       }
     }
   });
@@ -168,8 +220,6 @@ function getLostMessages() {
 function getMentionedMessages(keywordsConfigured) {
   const quotedMessages = [];
   const keywords = Object.values(keywordsConfigured).flat();
-
-  console.log('buscar por', keywords);
 
   document.querySelectorAll('.message-in, .message-out').forEach((msg) => {
     const citacaoEl = msg.querySelector('[aria-label="Mensagem citada"]');
@@ -191,15 +241,17 @@ function getMentionedMessages(keywordsConfigured) {
 
         const product = citacaoEl.querySelector('.quoted-mention._ao3e').innerText;
         const productId = CryptoJS.MD5(product.toLowerCase().replace(/\s+/g, '-')).toString();
+        const mentionId = CryptoJS.MD5(`${productId}-${extractedInfo.number || contact}-${extractedInfo.time}`).toString();
         const price = getPrice(product);
 
         if (price > 0) {
           const messageMentioned = {
+            mentionId,
+            productId,
             product,
             contact,
             productImage,
             interest,
-            productId,
             price,
             ...extractedInfo,
           };
@@ -219,14 +271,15 @@ function init(params, sendResponse) {
   const divMessagesContainer = document.querySelector(WA_CLASS_MAP.CHAT_SCROLL_CONTAINER);
 
   if (hasElementScroll(divMessagesContainer)) {
-    scrollToUp(divMessagesContainer, dates)
-      .then(endScroll => {
-        if (endScroll) {
+    scrollToUp(divMessagesContainer, dates, keywords)
+      .then(resultScroll => {
+
+        if (resultScroll.success) {
           setTimeout(() => {
             const domInfo = {
-              mentionedProducts: getMentionedMessages(keywords),
-              publishedProducts: getPublishedProducts(),
-              lostMessages: getLostMessages()
+              mentionedProducts: resultScroll.mentionedProducts,
+              publishedProducts: resultScroll.publishedProducts,
+              lostMessages: resultScroll.lostMessages,
             }
 
             sendResponse({ domInfo });

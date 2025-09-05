@@ -186,9 +186,6 @@ export const htmlToImageConvert = async (elementRef) => {
 };
 
 export const generateReportImages = async (productList, elRefs) => {
-
-  console.log('elRefs', elRefs)
-
   const promiseArray = elRefs.map((element) => htmlToImageConvert(element));
   const result = await Promise.all(promiseArray);
 
@@ -342,3 +339,87 @@ export function groupMessagesByProduct() {
 
   return allInterestedPeopleInProduct;
 }
+
+
+const loadImage = (src) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+};
+
+export const generateMentionedsPDFOld = async (cardRefs) => {
+  const doc = new jsPDF('p', 'mm', 'a4'); // 'p' (portrait), 'mm' (unidade), 'a4' (formato)
+  const margin = 10; // Margem para o PDF em mm
+  let isFirstPage = true;
+
+
+  for (const ref of cardRefs.current) {
+    const card = ref.current;
+    if (!card) continue;
+
+    // 1. Capturar o elemento do card
+    const canvas = await html2canvas(card, {
+      scale: 2, // Aumenta a resolução para melhor qualidade
+      logging: true,
+      useCORS: true, // Necessário se as imagens vêm de domínios diferentes
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 1.0);
+    const imgWidth = 210 - 2 * margin; // Largura A4 - margens
+    const pageHeight = 297; // Altura A4
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+
+    // Se não for a primeira página, adicione uma nova
+    if (!isFirstPage) {
+      doc.addPage();
+    }
+    isFirstPage = false;
+
+    let position = margin; // Posição vertical inicial
+
+    // 2. Adicionar imagem ao PDF (tratando quebras de página se o card for muito grande)
+    // Para o seu caso, cada card é uma página, então essa lógica é simplificada
+    doc.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
+  }
+
+  doc.save('cartoes_mencionados.pdf');
+}
+
+export const generateMentionedsPDF = async (cardRefs) => {
+  const doc = new jsPDF('p', 'mm', 'a4');
+  const margin = 10;
+  let isFirstPage = true;
+
+  for (const ref of cardRefs.current) {
+    const card = ref.current;
+    if (!card) continue;
+
+    // Aguarde o carregamento de todas as imagens dentro do card
+    const images = card.querySelectorAll('img');
+    const imagePromises = Array.from(images).map(img => loadImage(img.src));
+    await Promise.all(imagePromises);
+
+    const canvas = await html2canvas(card, {
+      scale: 2,
+      logging: true,
+      useCORS: true,
+    });
+
+    const imgData = canvas.toDataURL('image/jpeg', 1.0);
+    const imgWidth = 210 - 2 * margin;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    if (!isFirstPage) {
+      doc.addPage();
+    }
+    isFirstPage = false;
+
+    doc.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight);
+  }
+
+  doc.save('cartoes_mencionados.pdf');
+};

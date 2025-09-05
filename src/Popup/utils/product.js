@@ -1,8 +1,18 @@
-export function defineBuyersPerProduct(mensagens) { // Definir os compradores para cada produto
-    const palavrasChaveInteresse = ["quero", "fila", "qr", "qro"];
-    const palavrasChaveDesistencia = ["desisto", "desisti", "cancelar", "cancela"];
+export function defineBuyersPerProduct(mensagens, keywords) {
+    const palavrasChaveInteresse = [...keywords.interest, ...keywords.wait];
+    const palavrasChaveDesistencia = keywords.desist;
 
     const agrupados = {};
+
+    mensagens.sort((a, b) => {
+        if (a.time < b.time) {
+            return -1;
+        }
+        if (a.time > b.time) {
+            return 1;
+        }
+        return 0;
+    });
 
     mensagens.forEach(msg => {
         const { productId, product, contact, number, name, interest, productImage, time, price } = msg;

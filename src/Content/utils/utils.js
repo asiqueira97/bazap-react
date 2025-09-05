@@ -20,8 +20,6 @@ export function verificarEmoji(element) {
   return false;
 }
 
-///////// NOVAS
-
 export function extrairInfo(dataText) {
   if (!dataText) return null;
 

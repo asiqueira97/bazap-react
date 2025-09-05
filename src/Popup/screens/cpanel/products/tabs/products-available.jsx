@@ -5,10 +5,6 @@ import { generateProducsAvailable } from '../../../../utils/utils';
 import { useAppStore } from '../../../../../store/useAppStore';
 import "./styles.scss";
 
-const removerAcentos = (text) => {
-  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-};
-
 function ProductsAvailable() {
 
   const { publishedProducts, buyersPerProduct } = useAppStore()
@@ -32,7 +28,6 @@ function ProductsAvailable() {
   const refTest = createRef();
 
   const handleClickDownload = () => {
-    console.log('gerar download product');
     generateProducsAvailable(refTest);
   };
 

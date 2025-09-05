@@ -43,6 +43,7 @@
     "default_popup": "popup.html"
   },
   "host_permissions": [
-    "https://brechozito.com.br/*"
+    "https://brechozito.com.br/*",
+    "<all_urls>"
   ]
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { timeToSeconds, secondsToTime } from '../../../../utils/utils';
 import style from './style.scss';
+import Logo from '../../../../../assets/logo.png'
 
 function ProductSoldCard({ product, products }) {
   const messages = products[product];
@@ -34,7 +35,7 @@ function ProductSoldCard({ product, products }) {
   return (
     <div className="product-sold-card">
       <div className="product-image">
-        <img src={image} />
+        <img src={Logo} />
         <span>{productName}</span>
       </div>
 
