@@ -7,6 +7,7 @@ import LoadingImage from '../assets/loading.gif';
 import { messagesError } from './utils/utils';
 import Alert from './screens/alert/alert';
 import './styles.scss';
+import { clearDatabase } from '../database/db';
 
 type ErrorKey = keyof typeof messagesError;
 
@@ -60,7 +61,10 @@ const Popup = () => {
           return;
         }
 
+
+
         chrome.storage.local.set({ whatsappGroupsList: chats }, () => {
+          clearDatabase()
           setGroupImage(groupImage)
           setCurrentGroup(groupName)
           setGroups(chats);

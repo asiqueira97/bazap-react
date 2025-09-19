@@ -4,7 +4,7 @@ import { useAppStore } from '../../../store/useAppStore';
 import { getWeekdayIfWithin7Days, formatDateWithRelativeDay, subtractOneDay, filtrarPorData } from '../../utils/date';
 import { defineBuyersPerProduct } from '../../utils/product';
 import LoadingImage from '../../../assets/loading.gif';
-import { getOptionsSelectInitialFilter } from '../../utils/utils';
+import { VscSettingsGear } from "react-icons/vsc";
 import style from './style.scss';
 
 const Filter = () => {
@@ -18,7 +18,7 @@ const Filter = () => {
     setBuyersPerProduct,
     setDateSearched,
     setLostMessages,
-    setKeywords
+    setKeywords,
   } = useAppStore()
 
   const [loadingSearch, setLoadingSearch] = useState(false);
@@ -133,7 +133,7 @@ const Filter = () => {
 };
 
 const Initial = () => {
-  const { groupImage } = useAppStore()
+  const { groupImage, setCurrentView } = useAppStore()
   return (
     <div className="Bazap_initial">
       <Alerts />
@@ -142,6 +142,12 @@ const Initial = () => {
           <img src={groupImage || ''} width={70} />
         </div>
         <Filter />
+      </div>
+
+      <div className="Bazap_initial-config__content">
+        <button onClick={() => setCurrentView('setup')}>
+          <VscSettingsGear />
+        </button>
       </div>
     </div>
   );

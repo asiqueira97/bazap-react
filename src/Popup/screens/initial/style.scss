@@ -98,4 +98,28 @@
 
     }
   }
+
+  .Bazap_initial-config__content {
+    width: 60%;
+    height: auto;
+    padding: 20px 0px;
+    display: flex;
+    justify-content: end;
+
+    svg {
+      font-size: 20px;
+      color: #000;
+    }
+
+    button {
+      width: 42px;
+      height: 42px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
 }

@@ -1,5 +1,4 @@
 import { processAndSaveSingleImage } from "../Content/utils/imageProcessor";
-import { clearDatabase } from "../database/db";
 
 function enviarParaAbaWhatsapp(action, payload = {}, callback) {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -54,9 +53,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   // MANDAR O SEARCH
   if (request.action === 'search') {
-
-    clearDatabase();
-
     enviarParaAbaWhatsapp('search', request.params, (res) => {
       if (res?.domInfo) {
         sendResponse({ ok: true, result: res.domInfo });
