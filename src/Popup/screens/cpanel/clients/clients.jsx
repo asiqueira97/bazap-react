@@ -1,99 +1,108 @@
-import React, {useState, createRef} from 'react'
-import Search from '../../../components/search/search'
-import ProductCardClient from '../../../components/product-card-client/product-card-client'
-import ModaReportClient from '../../../components/modal/modal-report-client'
-import { useBazapContext } from '../../../context/BazapContext'
-import { generateReportImages, generateReportPdf, removerAcentos } from '../../../utils/utils'
-import style from './style.scss'
+import React, { useState, createRef } from 'react';
+import Search from '../../../components/search/search';
+import ProductCardClient from '../components/product-card-client/product-card-client';
+import { generateReportImages, removerAcentos } from '../../../utils/utils';
+import { useAppStore } from '../../../../store/useAppStore';
+import Modal from '../../../components/modal/Modal';
+import style from './style.scss';
 
 function Clients() {
-    
-    const productsByClient = JSON.parse( localStorage.getItem('products-by-client') )
-    
-    const { handleModal, setShowPix } = useBazapContext()
 
-    const [products, setProducts] = useState(productsByClient)
+  const { buyersPerProduct } = useAppStore()
 
-    const handleSearch = (e) => {
-        const value = e.target.value.trim().toLowerCase()
-        const filtered = Object.keys(productsByClient).filter( client => {
-            return client.toLowerCase().includes(value) || removerAcentos(client).toLowerCase().includes(value)
-        } )
-        
-        if(filtered.length > 0) setProducts(filtered)
-    }
+  const productsByClient = buyersPerProduct.reduce((acc, produto) => {
+    const client = produto.levou;
 
-    const productList = products.length > 0 ? products : Object.keys(productsByClient)
+    if (!client) return acc;
 
-    const elRefs = Array(productList.length).fill().map((_, i) => createRef())
+    if (!acc[client]) acc[client] = [];
 
-    const handleClickModal = () => {
-        setShowPix(true)
-        handleModal('report-clients','open')
-    }
+    acc[client].push({
+      productId: produto.productId,
+      product: produto.product,
+      price: produto.price,
+      image: produto.productImage
+    });
 
-    if(productList.length === elRefs.length) {
-        setTimeout( () => {
-            generateReportImages(productList, elRefs)
-        }, 3000 )
-    }
+    return acc;
+  }, {});
 
-    return (
-        <>
-            <div className="Dashboard__Clients">
-                <div className="download-container">
-                    <h3>Produtos separados por cliente</h3>
-                    <button type="button" onClick={handleClickModal}>Baixar relatório</button>
-                </div>
+  const [modalOpen, setModalOpen] = useState(false);
+  const [products, setProducts] = useState(productsByClient);
 
-                <div className="Dashboard__Clients-content">
-                    <Search 
-                        title={''} 
-                        total={productList.length} 
-                        placeholder={'Buscar cliente'}
-                        onChange={handleSearch}
-                        origin='clients'
-                    />
+  const handleSearch = (e) => {
+    const value = e.target.value.trim().toLowerCase();
+    const filtered = Object.keys(productsByClient).filter(
+      (client) => client.toLowerCase().includes(value) || removerAcentos(client).toLowerCase().includes(value)
+    );
 
-                    <div className="Dashboard__Clients-productList">
-                        {productList.length > 0 && productList.map( (key, index) => <ProductCardClient elementRef={elRefs[index]} productList={productsByClient} index={key} key={index} /> ) }
-                    </div>
+    if (filtered.length > 0) setProducts(filtered);
+  };
 
-                </div>
-            </div>
-            
-            <ModaReportClient name='report-clients'>
-                <p className="title">Escolha a forma de download</p>
+  const productList = products.length > 0 ? products : Object.keys(productsByClient);
 
-                <div className="info-download">
-                    <ul>
-                        <li>PDF: Arquivo pdf completo com todas as vendas separado por cliente.</li>
-                        <li>Imagens: Arquivo zip com imagens de venda por cliente.</li>
-                    </ul>
-                </div>
+  const elRefs = Array(productList.length)
+    .fill()
+    .map((_, i) => createRef());
 
-                <div className="flex-row justify-around align-center">
-                    <div className="flex-row" style={{gap: 10}}>
-                        <button
-                            className="download-button"
-                            onClick={() => generateReportPdf(elRefs)}
-                            data-name="pdf"
-                        >
-                            PDF
-                        </button>
+  const handleClickModal = () => setModalOpen(true)
 
-                        <button 
-                            className="download-button" 
-                            onClick={() => generateReportImages(productList, elRefs)}
-                            data-name="images"
-                        >
-                            IMAGENS
-                        </button>
-                    </div>
-                </div>
-            </ModaReportClient>
-        </>
-    )
+  return (
+    <>
+      <div className="Dashboard__Clients">
+        <div className="download-container">
+          <h3>Produtos separados por cliente</h3>
+          <button type="button" onClick={handleClickModal}>
+            Baixar relatório
+          </button>
+        </div>
+
+        <div className="Dashboard__Clients-content">
+          <div className="flex-row justify-between align-center" style={{ margin: '15px 0px' }}>
+            <h3>Clientes ({productList.length})</h3>
+          </div>
+          <Search
+            placeholder={'Buscar cliente'}
+            onChange={handleSearch}
+          />
+
+          <div className="Dashboard__Clients-productList">
+            {productList.length > 0 &&
+              productList.map((key, index) => (
+                <ProductCardClient
+                  elementRef={elRefs[index]}
+                  productList={productsByClient}
+                  index={key}
+                  key={index}
+                />
+              ))}
+          </div>
+        </div>
+      </div>
+
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)}>
+        <p className="title">Relatório de vendas</p>
+
+        <div className="info-download">
+          <ul>
+            <li>Imagens de venda por cliente.</li>
+          </ul>
+        </div>
+
+        <div className="flex-row justify-around align-center">
+          <div className="flex-row" style={{ gap: 10 }}>
+            <button
+              className="download-button"
+              onClick={() => generateReportImages(productList, elRefs)}
+              data-name="images"
+            >
+              Baixar
+            </button>
+          </div>
+        </div>
+      </Modal>
+    </>
+  );
 }
 
-export default Clients
+export default Clients;

@@ -1,47 +1,39 @@
-import React from "react";
-import Siderbar from "../../components/sidebar/siderbar";
-import Dashboard from "./dashboard/dashboard";
-import Clients from "./clients/clients";
-import Products from "./products/products";
-import { useBazapContext } from "../../context/BazapContext";
+import React from 'react';
+import Siderbar from './components/sidebar/siderbar';
+import Dashboard from './dashboard/dashboard';
+import Clients from './clients/clients';
+import Products from './products/products';
+import UntrackedIntentions from './error-management/UntrackedIntentions';
+import { useAppStore } from '../../../store/useAppStore';
+import Setup from '../setup/setup';
 
 const Panel = () => {
 
-    const { currentPage } = useBazapContext()
+  const { cpanelCurrentView } = useAppStore()
 
-    const pages = {
-        'dashboard' : {
-            'title': 'Dashboard',
-            'component': <Dashboard />
-        },
-        'clients': {
-            'title': 'Clientes',
-            'component': <Clients />
-        },
-        'products': {
-            'title': 'Produtos',
-            'component': <Products />
-        }
-    }
+  const pages = {
+    'dashboard': Dashboard,
+    'products': Products,
+    'clients': Clients,
+    'errorManagement': UntrackedIntentions,
+    'settings': Setup
+  };
 
-    return (
-        <div className="Bazap_dashboard">
-            <div className="Dashboard__container">
-                
-                <Siderbar />
+  const Component = pages[cpanelCurrentView]
 
-                <div className="Dashboard__content">
-                    <header>
-                        <h3>{pages[currentPage]['title']}</h3>
-                    </header>
+  return (
+    <div className="Bazap_dashboard">
+      <div className="Dashboard__container">
+        <Siderbar />
 
-                    <div className="Dashboard_page-content">
-                        {pages[currentPage]['component']}
-                    </div>
-                </div>
-            </div>
+        <div className="Dashboard__content">
+          <div className="Dashboard_page-content">
+            {Component ? <Component origin="panel" /> : <div>Módulo não encontrado.</div>}
+          </div>
         </div>
-    )
-}
+      </div>
+    </div>
+  );
+};
 
 export default Panel;

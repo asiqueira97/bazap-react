@@ -1,279 +1,362 @@
 import {
-    generateId,
-    getContactNumber,
-    getTime,
-    getPrice,
-    verificarEmoji
-} from './utils/utils'
+  getPrice,
+  verificarEmoji,
+  extrairNomeENumero,
+  extrairInfo,
+} from './utils/utils';
 
-const settings = { timeScrollUp: 1 }
+import { extractMentionedProductImage, extractPublishedProductImage } from './utils/image'
 
-function scrollToUp(divMessagesContainer, period) {  
+import { WA_CLASS_MAP } from './utils/class-map';
 
-    period = period.split('|')
-    
-    divMessagesContainer.scrollTop = 0
+const CryptoJS = require('crypto-js');
 
-    let days = [] 
-    const findDays = document.querySelectorAll('.x1n2onr6.x9f619')
-    
-    findDays.forEach(day => days.push(day.innerText.toUpperCase()))
+const settings = { timeScrollUp: 200 };
 
-    const checkInclude = period.length === 1 ? 
-    days.includes(period[0]) : 
-    days.includes(period[0]) || days.includes(period[1])
+function scrollToUp(divMessagesContainer, dates, keywords) {
+  return new Promise(async (resolve) => {
 
-    return checkInclude || document.querySelectorAll('span[data-icon="lock-small"]').length == 1
-}
+    const { primaryDate } = dates
 
+    const primaryDateSplit = primaryDate.split('|')
 
-function getPublishedProducts(port) {
-    let products = []
+    const targetDate = primaryDateSplit[0] || primaryDateSplit[1];
+    const scrollStep = -400;
+    const delay = settings.timeScrollUp;
 
-    document.querySelectorAll('div[data-pre-plain-text*="Alessandra"]').forEach(el => {
-        const text = el.querySelector('._ao3e.selectable-text.copyable-text').innerText
-
-        if( getPrice(text) > 0 ) {
-            const id = generateId(text)
-            const isVideo = el.querySelector('span[data-icon="media-play"]') !== null
-
-            if(isVideo) {
-                const image = el.querySelector('div[style*="background-image"]')
-                if(image) {
-                    const imageUrl = image.getAttribute('style').replace('background-image: url(', '').replace(');', '').replace(/[\\"]/g, '').replaceAll(' ', '').replace('width:100%;','')
-                    products.push({
-                        id,
-                        name: text,
-                        urlImages: [imageUrl],
-                        flag: 'video'
-                    })
-                }
-            }  else {
-                const divImages = el.querySelector('div[aria-label="Abrir imagem"]')
-
-                if(divImages) {
-                    const images = divImages.querySelectorAll('img')
-                    const urlImages = Array.from(images).map( img => img.src )
-
-                    products.push({
-                        id,
-                        name: text,
-                        urlImages,
-                        flag: 'foto'
-                    })
-                }
-            } 
-
-        }
-    })
-
-    port.postMessage({message:'list_published_products', products})
-}
-
-function getMentionedMessages() {
-    let quotedMessages = []
-
-    document.querySelectorAll('div[aria-label="Mensagem citada"]').forEach( quoteMessage => {
-        const quoteContainer = quoteMessage.parentElement.parentElement.parentElement
-        const product = quoteContainer.querySelector('.quoted-mention')
-        const images = quoteContainer.querySelectorAll('.x18d0r48')
-        const emojiContainer = quoteContainer.querySelector('._am2u._ar8h')
-
-        let sender = quoteContainer.getAttribute('data-pre-plain-text')
-        let interest = quoteContainer.querySelector('._akbu')
-
-        const allCard = quoteContainer.parentElement.parentElement.parentElement.parentElement;
-        const profileImageContainer = allCard.querySelector('div[aria-label*="Abrir os dados da conversa"]')
-
-        if(!sender && emojiContainer) {
-            sender = quoteContainer.querySelector('._am2m').querySelector('span').getAttribute('aria-label') || quoteContainer.querySelector('._am2m').querySelectorAll('span')[1].text
-        }
-
-        if(product && images.length > 0 && sender && (interest || emojiContainer) ) {
-
-            let messageValid = false
-
-            if( interest && !emojiContainer ) {
-                interest = interest.querySelector('.selectable-text').innerText
-                messageValid = localStorage.getItem('EXT_KEYWORDS').split(',').some((key) => interest.toLowerCase().includes(key))
-            } else {
-                interest = 'Quero (emoji)'
-                messageValid = verificarEmoji(emojiContainer)
-            }
-
-            if(messageValid) {
-                const image = images[1] || images[0]
-                const imageUrl = image.getAttribute('style').replace('background-image: url(', '').replace(');', '').replace(/[\\"]/g, '')
-                const nameContainer = quoteContainer.parentElement.querySelectorAll('div')[0]
-
-                if(imageUrl !== '' && nameContainer) {
-                    const id = generateId(product.innerText)
-                    const name = nameContainer.querySelector('span').innerText.trim()
-
-                    let date = sender.split(']')[0].replace('[','') || 'QUARTA-FEIRA'
-                    let time = ''
-                    let number = ''
-
-                    if(interest && !emojiContainer) {
-                        time = getTime(sender)
-                        number = getContactNumber(sender)
-                    } else {
-                        time = {
-                            time: emojiContainer.querySelectorAll('div')[1].querySelector('span').text,
-                            date: date
-                        }
-                    }
-
-                    let imageProfile = ''
-                    if(profileImageContainer) {
-                        const profileImageElement = profileImageContainer.querySelector('img')
-                        if(profileImageElement) {
-                            imageProfile = profileImageElement.src
-                        }
-                    }
-
-                    const price = getPrice(product.innerText)
-
-                    const dataDessage = {
-                        id,   
-                        name,
-                        imageUrl,
-                        interest,
-                        date,
-                        time,
-                        imageProfile,
-                        price,
-                        number,
-                        sender: sender.slice(0, -2),
-                        product: product.innerText.trim(),
-                    }
-
-                    if(price > 0) {
-                        quotedMessages.push(dataDessage)
-                    }
-                }
-            }
-        }
-    } )
-
-    return quotedMessages
-}
-
-function getMessages(port, params, groupName) {
-    const messages = getMentionedMessages()
-
-    console.log('messages', messages)
-
-    if(messages.length > 0) {
-        const domInfo = { groupName, messages, params }
-        port.postMessage({message:'list', domInfo})
-        document.querySelector('#app').setAttribute('json-data', JSON.stringify(domInfo))
-    }else{
-        port.postMessage({message:'notFound'})
+    if (!divMessagesContainer) {
+      resolve(false);
+      return;
     }
-}
 
-function getNameChatSelected() {
-    const chatSelected =  document.querySelector('div[aria-label*="Lista de conversas"]').querySelector('div[aria-selected="true"]')
+    const getAllMessages = () => Array.from(document.querySelectorAll('div[data-pre-plain-text]'));
 
-    if(!chatSelected) return ''
+    const extractDate = el => {
+      const match = el.dataset.prePlainText?.match(/\[\d{2}:\d{2}, (\d{2}\/\d{2}\/\d{4})\]/);
+      return match ? match[1] : null;
+    };
 
-    return chatSelected.querySelector('div[role*="gridcell"]').querySelector('span').innerText
+    let found = false;
+    let reachedPast = false;
+    let scrolls = 0;
+
+    const mensagensMencionadas = new Map();
+    const mensagensPublicadas = new Map();
+    const mensagensPerdidas = new Map();
+
+    const scrollAndSearch = async () => {
+
+      while (!reachedPast) {
+
+        divMessagesContainer.scrollBy(0, scrollStep);
+
+        // Menções
+        const messagesMent = getMentionedMessages(keywords)
+        messagesMent.forEach(msg => {
+          if (!mensagensMencionadas.has(msg.mentionId)) {
+            mensagensMencionadas.set(msg.mentionId, msg);
+          }
+        });
+
+        // Produtos publicados (vendedor)
+        const messagesPublish = getPublishedProducts()
+        messagesPublish.forEach(msg => {
+          if (!mensagensPublicadas.has(msg.productId)) {
+            mensagensPublicadas.set(msg.productId, msg);
+          }
+        });
+
+        // Gerenciar erros
+        const messagesLost = getLostMessages(keywords)
+        messagesLost.forEach(msg => {
+          if (!mensagensPerdidas.has(msg.messageId)) {
+            mensagensPerdidas.set(msg.messageId, msg);
+          }
+        });
+
+        const btnClickMore = document.querySelector('button.x14m1o6m.x126m2zf')
+        if (btnClickMore) btnClickMore.click()
+
+        await new Promise(r => setTimeout(r, delay));
+
+        const allMsgs = getAllMessages();
+        const dates = allMsgs.map(extractDate).filter(Boolean);
+        const hasTarget = dates.includes(targetDate);
+        const hasBeforeTarget = dates.some(date => {
+          const [d, m, y] = date.split('/').map(Number);
+          const [td, tm, ty] = targetDate.split('/').map(Number);
+          const current = new Date(y, m - 1, d);
+          const target = new Date(ty, tm - 1, td);
+          return current < target;
+        });
+
+        const findIconLockInitialChat = document.querySelector('div[role="button"] span[data-icon="lock-small"]')
+
+        if (hasTarget) {
+          found = true;
+        }
+
+        if ((found && hasBeforeTarget) || findIconLockInitialChat) {
+          reachedPast = true;
+        }
+
+        scrolls++;
+      }
+
+      const filtered = getAllMessages().filter(el => extractDate(el) === targetDate);
+
+      if (filtered.length === 0) {
+        console.warn(`⚠️ Nenhuma mensagem da data ${targetDate} encontrada.`);
+        resolve(false);
+        return;
+      }
+
+      const mensagensUnicas = Array.from(mensagensMencionadas.values());
+      const produtosUnicos = Array.from(mensagensPublicadas.values());
+      const mensagensPerdidasUnicas = Array.from(mensagensPerdidas.values());
+
+      resolve({
+        success: true,
+        mentionedProducts: mensagensUnicas,
+        publishedProducts: produtosUnicos,
+        lostMessages: mensagensPerdidasUnicas
+      });
+    };
+
+    await scrollAndSearch();
+  })
 }
 
 function hasElementScroll(element) {
-    return element.scrollHeight > element.clientHeight;
+  return element.scrollHeight > element.clientHeight;
 }
 
+function getPublishedProducts() {
 
-function init(port, params) {
-    const jsonData = document.querySelector('#app').getAttribute('json-data')
-        
-    const interval = setInterval(() => {
-        const header = document.querySelector('#main header')
+  const products = [];
 
-        if(header) {
-            clearInterval(interval)
-            
-            const groupName = header.querySelector('span').innerText.toLowerCase().trim()
+  document.querySelectorAll('.message-in, .message-out').forEach((msg) => {
+    const imageEl = msg.querySelector('[aria-label="Abrir imagem"], [aria-label="Open image"]');
+    const isVideo = msg.querySelector('span[data-icon="media-play"]') !== null;
 
-            if(localStorage.getItem('EXT_GROUP_NAME').toLowerCase() === groupName) {
+    if (!imageEl && !isVideo) return;
 
-                if(document.querySelectorAll('.message-in.focusable-list-item').length === 0) {
-                    port.postMessage({message:'notFound'})
-                    return;
-                }
+    const product = msg.querySelector('.selectable-text.copyable-text')?.innerText
+    if (!product) return;
 
-                if(jsonData) {
-                    getMessages(port,params, groupName)
-                    return;
-                }
+    const image = isVideo ? extractMentionedProductImage(msg) : extractPublishedProductImage(imageEl.querySelectorAll('img'))
+    const messageInfoBody = msg.querySelector('div[data-pre-plain-text]');
 
-                const divMessagesContainer = document.querySelector('.xjbqb8w.x1ewm37j')
+    const infoMessage = extrairInfo(messageInfoBody?.getAttribute('data-pre-plain-text'))
+    const productId = CryptoJS.MD5(product.toLowerCase().replace(/\s+/g, '-')).toString();
+    const price = getPrice(product);
 
-                if( hasElementScroll(divMessagesContainer) ) {
-                    const toUp = setInterval(function() {
-                        const find = scrollToUp(divMessagesContainer, params.period)
-                        if(find) {
-                            clearInterval(toUp)
-                            
-                            setTimeout( () => {
-                                getMessages(port,params,groupName)
-                                getPublishedProducts(port)
-                            }, 1000 )
-                        }
-                    }, settings.timeScrollUp)
-                } else {
-                    port.postMessage({message:'notFound'})
-                }
+    if (!price || price === 0) return;
 
-            } else {
-                port.postMessage({message:'notFound'})
-            }
-        }
-    }, 1000)
-}
-
-chrome.runtime.onConnect.addListener(function(port) {
-    if(port.name === "content") {
-        port.onMessage.addListener(function(response) {
-
-            if(response.message === 'init') {
-
-                const jsonData = document.querySelector('#app').getAttribute('json-data')
-                if(jsonData) {
-                    port.postMessage({message:'jsonDataExists', jsonData})
-                }
-                
-                const checkWhatsAppOpend = localStorage.getItem('me-display-name')
-
-                if(!checkWhatsAppOpend) {
-                    port.postMessage({message:'notLogged'})
-                }
-
-                let numberLogged = localStorage.getItem('last-wid-md')
-                if(numberLogged) {
-                    numberLogged = numberLogged.split(':')[0].replaceAll('"','')
-                    port.postMessage({message:'checkPermission', numberLogged})
-                }             
-            }
-
-            if(response.message === 'permission_data') {
-                const chatSelected = getNameChatSelected()
-
-                if( chatSelected.trim().toLowerCase() !== response.permission.groupName.toLowerCase()  ) {
-                    port.postMessage({message:'unselectedGroup'})
-                    return;
-                }
-
-                localStorage.setItem('EXT_GROUP_NAME', response.permission.groupName);
-                localStorage.setItem('EXT_KEYWORDS', response.permission.keywords.join(','));
-            }
-
-            if(response.message === 'search') {
-                init(port, response.params)
-            }
-
-        })
+    if (image) {
+      chrome.runtime.sendMessage({
+        action: "process_single_image",
+        url: image,
+        productId: productId
+      })
     }
-})
+
+    products.push({
+      ...infoMessage,
+      price,
+      productId,
+      image,
+      product,
+      media: isVideo ? 'video' : 'foto'
+    })
+  })
+
+  return products
+}
+
+function getLostMessages(keywordsConfigured) {
+  const lostMessages = [];
+
+  const keywords = Object.values(keywordsConfigured).flat();
+
+  document.querySelectorAll('.message-in, .message-out').forEach((msg) => {
+    const citacaoEl = msg.querySelector('[aria-label="Mensagem citada"]');
+    if (!citacaoEl) return;
+
+    const sectionIdentification = msg.querySelector('._ahxj._ahxz');
+    const messageInfoBody = msg.querySelector('div[data-pre-plain-text]');
+
+    if (messageInfoBody) {
+      const interest =
+        messageInfoBody
+          .querySelector('._ao3e.selectable-text.copyable-text')
+          ?.innerText?.toLowerCase() || 'Uknnow';
+
+      if (keywords.some((key) => interest.toLowerCase().includes(key))) {
+        const contact = extrairNomeENumero(sectionIdentification);
+        const extractedInfo = extrairInfo(messageInfoBody?.getAttribute('data-pre-plain-text'));
+        const messageId = CryptoJS.MD5(`${interest}-${extractedInfo.time}`).toString();
+
+        const product = citacaoEl.querySelector('.quoted-mention._ao3e').innerText;
+        const price = getPrice(product);
+
+        if (!price) {
+          const messageMentioned = {
+            contact,
+            interest,
+            messageId,
+            ...extractedInfo,
+          };
+
+          lostMessages.push(messageMentioned);
+        }
+      }
+    }
+  });
+
+  return lostMessages;
+}
+
+function getMentionedMessages(keywordsConfigured) {
+  const quotedMessages = [];
+  const keywords = Object.values(keywordsConfigured).flat();
+
+  document.querySelectorAll('.message-in, .message-out').forEach((msg) => {
+    const citacaoEl = msg.querySelector('[aria-label="Mensagem citada"]');
+    if (!citacaoEl) return;
+
+    const sectionIdentification = msg.querySelector('._ahxj._ahxz');
+    const messageInfoBody = msg.querySelector('div[data-pre-plain-text]');
+
+    if (messageInfoBody) {
+      const interest =
+        messageInfoBody
+          .querySelector('._ao3e.selectable-text.copyable-text')
+          ?.innerText?.toLowerCase() || 'Uknnow';
+
+      if (keywords.some((key) => interest.toLowerCase().includes(key))) {
+        const contact = extrairNomeENumero(sectionIdentification);
+        const productImage = extractMentionedProductImage(citacaoEl);
+        const extractedInfo = extrairInfo(messageInfoBody?.getAttribute('data-pre-plain-text'));
+
+        const product = citacaoEl.querySelector('.quoted-mention._ao3e').innerText;
+        const productId = CryptoJS.MD5(product.toLowerCase().replace(/\s+/g, '-')).toString();
+        const mentionId = CryptoJS.MD5(`${productId}-${extractedInfo.number || contact}-${extractedInfo.time}`).toString();
+        const price = getPrice(product);
+
+        if (price > 0) {
+          const messageMentioned = {
+            mentionId,
+            productId,
+            product,
+            contact,
+            productImage,
+            interest,
+            price,
+            ...extractedInfo,
+          };
+
+          quotedMessages.push(messageMentioned);
+        }
+      }
+    }
+  });
+
+  return quotedMessages;
+}
+
+function init(params, sendResponse) {
+  const { dates, keywords } = params
+
+  const divMessagesContainer = document.querySelector(WA_CLASS_MAP.CHAT_SCROLL_CONTAINER);
+
+  if (hasElementScroll(divMessagesContainer)) {
+    scrollToUp(divMessagesContainer, dates, keywords)
+      .then(resultScroll => {
+
+        if (resultScroll.success) {
+          setTimeout(() => {
+            const domInfo = {
+              mentionedProducts: resultScroll.mentionedProducts,
+              publishedProducts: resultScroll.publishedProducts,
+              lostMessages: resultScroll.lostMessages,
+            }
+
+            sendResponse({ domInfo });
+          }, 1000);
+        } else {
+          console.log('❌ Data não encontrada no histórico.');
+        }
+      });
+  } else {
+    console.log('NENHUMA MENSAGEM ENCONTRADA')
+  }
+}
+
+function whatsappGroupsAutoClick() {
+  const listGroups = document.querySelector('div[aria-label="chat-list-filters"]').querySelector('button#group-filter');
+
+  if (listGroups && listGroups.getAttribute('aria-selected') === 'false')
+    listGroups.click();
+}
+
+function getWhatsAppGroups() {
+  const spans = document.querySelectorAll('div[aria-label="Lista de conversas"] div[role="gridcell"] span[title]');
+  if (!spans) {
+    return false
+  }
+
+  return Array.from(spans).map(span => span.getAttribute('title'))
+}
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  switch (request.action) {
+    case 'checkGroup': {
+      whatsappGroupsAutoClick()
+      const headerChat = document.querySelector('#main > header');
+      const groupNameElement = headerChat.querySelector('.x1iyjqo2.x6ikm8r');
+      const numberStorage = localStorage?.getItem('last-wid-md');
+
+      if (!groupNameElement || !numberStorage) {
+        sendResponse({ validGroup: false });
+        return;
+      }
+
+      const groupImage = headerChat.querySelector('img').src;
+      const groupName = groupNameElement.innerText.toLowerCase();
+      const match = numberStorage.match(/"(\d+):/);
+      const numberLogged = match ? match[1] : null;
+
+      setTimeout(() => {
+        const chats = getWhatsAppGroups()
+        sendResponse({ validGroup: true, session: { numberLogged, groupName, groupImage, chats } });
+      }, 1000)
+      return true;
+    }
+
+    case 'getListGroups': {
+      whatsappGroupsAutoClick()
+      setTimeout(() => {
+        const chats = getWhatsAppGroups()
+
+        if (!chats) {
+          sendResponse({ validSetup: false, error: 'Nenhuma conversa encontrada' });
+          return;
+        }
+
+        sendResponse({ validSetup: true, data: chats });
+      }, 1000);
+
+      return true; // canal de resposta assíncrona
+    }
+
+    case 'search': {
+      const { dates, keywords } = request;
+      init({ dates, keywords }, sendResponse);
+      return true;
+    }
+
+    default:
+      console.warn('Ação não reconhecida:', request.action);
+  }
+});

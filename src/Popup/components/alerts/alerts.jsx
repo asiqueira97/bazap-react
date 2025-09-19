@@ -1,18 +1,18 @@
-import React from 'react'
-import st from './style.scss'
-import { useBazapContext } from '../../context/BazapContext'
+import React from 'react';
+import st from './style.scss';
+import { useAppStore } from '../../../store/useAppStore';
+
 
 function Alerts() {
+  const { alertMessage } = useAppStore();
 
-    const {alertMessage} = useBazapContext()
+  if (!alertMessage) return null;
 
-    if(!alertMessage) return null
-
-    return (
-        <div className="alerts">
-            <p>{alertMessage}</p>
-        </div>
-    )
+  return (
+    <div className="alerts">
+      <p>{alertMessage}</p>
+    </div>
+  );
 }
 
-export default Alerts
+export default Alerts;

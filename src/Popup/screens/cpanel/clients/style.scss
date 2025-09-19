@@ -1,29 +1,29 @@
 .Dashboard__Clients {
-    padding-top: 20px;
+  padding-top: 20px;
 
-    .download-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        color: #a19f9f;
+  .download-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #a19f9f;
 
-        button {
-            width: 160px;
-            height: 40px;
-            background-color: #f06925;
-            border-radius: 20px;
-            border: 1px solid #f06925;
-            color: #fff;
-            cursor: pointer;
+    button {
+      width: 160px;
+      height: 40px;
+      background-color: #f06925;
+      border-radius: 20px;
+      border: 1px solid #f06925;
+      color: #fff;
+      cursor: pointer;
 
-            &:hover {
-                background-color: #ef773b;
-            }
-        }
+      &:hover {
+        background-color: #ef773b;
+      }
     }
+  }
 
-    .Dashboard__Clients-productList {
-        height: 330px;
-        overflow-y: scroll;
-    }
+  .Dashboard__Clients-productList {
+    height: 330px;
+    overflow-y: scroll;
+  }
 }

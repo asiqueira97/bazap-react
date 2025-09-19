@@ -1,0 +1,59 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    position: relative;
+}
+
+.modal {
+    width: 500px;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+
+    .btnCloseModal {
+        position: absolute;
+        right: -18px;
+        background: transparent;
+        top: -17px;
+        border: none;
+        cursor: pointer;
+        width: 40px !important;
+        color: black;
+        font-size: 30px;
+    }
+
+    .title {
+        font-size: 18px;
+    }
+
+    .info-download {
+        border-radius: 20px;
+        background-color: #f7dacb;
+
+        ul {
+            padding: 10px 0px;
+
+            li {
+                list-style-type: none;
+                padding: 6px 20px;
+                font-size: 14px;
+            }
+        }
+    }
+}
